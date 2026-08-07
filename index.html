@@ -51,6 +51,7 @@
     color:var(--dim);background:rgba(10,15,26,.68);border:1px solid rgba(35,48,71,.9);border-radius:10px;
     padding:8px 12px;line-height:1.6;pointer-events:none;white-space:nowrap;text-align:right}
   @media (max-width:640px){ .hud{font-size:11px;padding:6px 9px;right:8px;bottom:8px} }
+  @media (max-height:520px){ .hud{font-size:10px;padding:4px 8px;line-height:1.32} }
   .slab h2{margin:0 0 12px;font-size:15px;color:var(--amber);text-transform:uppercase;letter-spacing:.08em}
   table{width:100%;border-collapse:collapse;font-size:clamp(12.5px,1.5vw,16px)}
   td{padding:10px 8px;border-bottom:1px solid var(--line)}
@@ -681,9 +682,11 @@ function computeGraphDomain(sc, W){
   var y1=graphCurveY(sc,W,xmin), y2=graphCurveY(sc,W,xmax);
   return { xmin:xmin, xmax:xmax, ymin:0, ymax:Math.max(y1,y2)*1.1 };
 }
-function drawGraph(W, sc, sw, sh){
+function drawGraph(W, sc, sw, sh, maxH){
   var gw=clamp(sw*0.30, 128, 192), gh=gw*0.70;
+  if (maxH && gh>maxH){ gh=Math.max(34,maxH); gw=gh/0.70; }
   var gx=sw-gw-12, gy=12;
+  var rect={gx:gx,gy:gy,gw:gw,gh:gh};
   var padL=26, padB=18, padT=14, padR=10;
   var ox=gx+padL, oy=gy+gh-padB;
   var exX=gx+gw-padR, eyY=gy+padT;
@@ -704,7 +707,7 @@ function drawGraph(W, sc, sw, sh){
   ctx.fillStyle="#64748b"; ctx.font="10px system-ui";
   ctx.fillText("0", ox-8, oy+11);
 
-  var dom=W.gx; if (!dom) return;
+  var dom=W.gx; if (!dom) return rect;
   function mapX(v){ return ox + ((v-dom.xmin)/(dom.xmax-dom.xmin))*(exX-ox-4); }
   function mapY(v){ return oy - ((v-dom.ymin)/(dom.ymax-dom.ymin))*(oy-eyY-4); }
 
@@ -728,14 +731,33 @@ function drawGraph(W, sc, sw, sh){
     ctx.beginPath(); ctx.arc(lx,ly,4,0,6.284); ctx.fillStyle="#fff"; ctx.fill();
     ctx.strokeStyle=sc.graph.color; ctx.lineWidth=1.6; ctx.stroke();
   }
+  return rect;
 }
 
 var hudEl = document.getElementById("hud");
 var hudLast = "";
-function hudPanel(sw, sh, lines){
+/* İçeriği yazıp görünür yapar ve GERÇEK (ölçülmüş) yüksekliğini döner — grafiğe ne kadar
+   pay bırakılacağını tahminle değil, tarayıcının kendi ölçtüğü değerle hesaplıyoruz. */
+function setHudContent(lines){
   var html = lines.map(function(l){ return l.replace(/</g,"&lt;"); }).join("<br>");
   if (html!==hudLast){ hudEl.innerHTML=html; hudLast=html; }
   hudEl.className = "hud";
+  return hudEl.getBoundingClientRect().height;
+}
+/* gRect verilirse (grafik paneli çizildiyse) HUD onun HEMEN ALTINA, sağ kenarı hizalı
+   olacak şekilde konumlanır — böylece dar/kısa ekranlarda (ör. yatay tam ekran) iki panel
+   asla üst üste binmez. gRect yoksa HUD sağ-alt köşede sabit kalır. */
+function hudPanel(sw, sh, lines, gRect){
+  setHudContent(lines);
+  if (gRect){
+    hudEl.style.top = (gRect.gy+gRect.gh+8)+"px";
+    hudEl.style.right = Math.max(8, sw-(gRect.gx+gRect.gw))+"px";
+    hudEl.style.bottom = "auto";
+  } else {
+    hudEl.style.top = "auto";
+    hudEl.style.bottom = "10px";
+    hudEl.style.right = "10px";
+  }
 }
 
 /* ============================================================
@@ -797,13 +819,14 @@ function drawBox3DScene(sc){
 
   if (sc.mode==="slab"){
     hudEl.className="hud hide";
-  } else {
-    var hud=["T = "+Math.round(W.T)+" K","n = "+W.n,"V (bağıl) = "+Vrel.toFixed(2),"P (bağıl) = "+Pmodel.toFixed(1)];
-    if (sc.showPV) hud.push("P·V ≈ "+(Pmodel*Vrel).toFixed(1));
-    if (sc.combined && W.baseline!==null) hud.push("P·V/T ≈ "+(Pmodel*Vrel/W.T).toFixed(3)+"  (başlangıç: "+W.baseline.toFixed(3)+")");
-    hudPanel(sw, sh, hud);
+    return;
   }
 
+  var hud=["T = "+Math.round(W.T)+" K","n = "+W.n,"V (bağıl) = "+Vrel.toFixed(2),"P (bağıl) = "+Pmodel.toFixed(1)];
+  if (sc.showPV) hud.push("P·V ≈ "+(Pmodel*Vrel).toFixed(1));
+  if (sc.combined && W.baseline!==null) hud.push("P·V/T ≈ "+(Pmodel*Vrel/W.T).toFixed(3)+"  (başlangıç: "+W.baseline.toFixed(3)+")");
+
+  var gRect=null;
   if (sc.graph){
     if (W.frame%12===0){
       var xv = sc.graph.x==="V" ? Vrel : (sc.graph.x==="T" ? W.T : W.n);
@@ -811,7 +834,17 @@ function drawBox3DScene(sc){
       W.history.push({x:xv,y:yv});
       if (W.history.length>150) W.history.shift();
     }
-    drawGraph(W, sc, sw, sh);
+    /* HUD paneli, grafiğin hemen altına yerleşecek; grafiğe önce GERÇEK (ölçülmüş)
+       HUD yüksekliği kadar pay bırakarak çiziyoruz ki dar/kısa ekranlarda
+       (ör. yatay tam ekran) iki panel asla çakışmasın ya da taşmasın. */
+    var hudH = setHudContent(hud);
+    var maxGraphH = sh - 12 - hudH - 8 - 10;
+    gRect = drawGraph(W, sc, sw, sh, maxGraphH);
+    hudEl.style.top = (gRect.gy+gRect.gh+8)+"px";
+    hudEl.style.right = Math.max(8, sw-(gRect.gx+gRect.gw))+"px";
+    hudEl.style.bottom = "auto";
+  } else {
+    hudPanel(sw, sh, hud, null);
   }
 }
 
@@ -833,8 +866,9 @@ function drawDalton3DScene(sc){
 
   var Vrel=W.vol0;
   var pA=K_P*W.nA*W.T/Vrel, pB=K_P*W.nB*W.T/Vrel;
+  var pShown = W.filter==="A" ? pA : W.filter==="B" ? pB : pA+pB;
 
-  drawCylinder(lay.cx, lay.cy, lay.scale, L, WORLD_R, "locked", true, pA+pB, 140, W.T, 900);
+  drawCylinder(lay.cx, lay.cy, lay.scale, L, WORLD_R, "locked", true, pShown, 140, W.T, 900);
   var proj = mkProjector(lay.cx, lay.cy, lay.scale); proj.scale=lay.scale;
   var visible = W.filter==="both" ? W.particles : W.particles.filter(function(p){ return p.tag===W.filter; });
   drawParticles3D(proj, visible, WORLD_R);
@@ -842,7 +876,8 @@ function drawDalton3DScene(sc){
   hudPanel(sw, sh, [
     "P (turuncu, A) = "+pA.toFixed(1),
     "P (mavi, B) = "+pB.toFixed(1),
-    "P (toplam) = "+(pA+pB).toFixed(1)
+    "P (toplam) = "+(pA+pB).toFixed(1),
+    "gösterge: "+(W.filter==="A"?"yalnız A":W.filter==="B"?"yalnız B":"toplam")
   ]);
 }
 
@@ -884,10 +919,22 @@ function drawEffusion3DScene(sc){
   var d=fit(), sw=d[0], sh=d[1];
   ctx.clearRect(0,0,sw,sh);
 
-  var pairScale = Math.min(sw*0.40/ (WORLD_LMAX+WORLD_R*2.4), sh*0.34/(WORLD_R*2.6));
+  /* İki gaz için iki yatay "şerit" (lane); her şeridin üstünde etiket+çubuk için
+     sabit bir pay ayrılır, silindir kalan alana ORANTILI ölçeklenir — böylece
+     dar/kısa ekranlarda (yatay tam ekran gibi) hiçbir şey kırpılmaz. */
   var Ls=WORLD_LMAX*0.62, Lr=WORLD_LMAX*0.30, Ltot=Ls+Lr;
-  var cxL = sw*0.065, cxH = sw*0.535;
-  var cy1 = sh*0.30, cy2 = sh*0.72;
+  var laneH = sh/2;
+  var topText = clamp(laneH*0.24, 15, 24);
+  var botMargin = Math.max(4, laneH*0.05);
+  var cylAvailH = Math.max(20, laneH-topText-botMargin);
+  var barW = clamp(sw*0.22, 70, 160);
+  var availW = Math.max(60, sw - sw*0.06 - barW - 14);
+  var scaleW = availW/(Ltot+WORLD_R*2.4);
+  var scaleH = cylAvailH/(TUBE_HALF_R*WORLD_R*2.6);
+  var pairScale = Math.min(scaleW, scaleH);
+  var cx = sw*0.03 + WORLD_R*pairScale*0.35;
+  var cy1 = topText + cylAvailH/2;
+  var cy2 = laneH + topText + cylAvailH/2;
 
   if (!W.inited){
     W.pl=[]; W.ph=[];
@@ -912,23 +959,26 @@ function drawEffusion3DScene(sc){
     ctx.strokeStyle="#fbbf24"; ctx.lineWidth=1.6; ctx.stroke();
     ctx.restore();
     drawParticles3D(proj, list, WORLD_R);
-    return proj;
   }
-  drawPair(cxL, cy1, W.pl, 90);
-  drawPair(cxH, cy2, W.ph, 90);
+  drawPair(cx, cy1, W.pl, 90);
+  drawPair(cx, cy2, W.ph, 90);
 
   var recvL=0, recvH=0;
   W.pl.forEach(function(p){ if (p.x>Ls) recvL++; });
   W.ph.forEach(function(p){ if (p.x>Ls) recvH++; });
 
-  ctx.font="600 13px ui-monospace, monospace"; ctx.textAlign="left";
-  ctx.fillStyle="#38bdf8"; ctx.fillText("hafif gaz (H₂) — karşı odada: "+recvL+" / "+W.pl.length, sw*0.03, sh*0.06);
-  ctx.fillStyle="#fb7185"; ctx.fillText("ağır gaz (O₂) — karşı odada: "+recvH+" / "+W.ph.length, sw*0.03, sh*0.94);
+  var fontPx = clamp(topText*0.5, 10.5, 13);
+  ctx.font="600 "+fontPx+"px ui-monospace, monospace"; ctx.textAlign="left";
+  var labelY1 = topText*0.62, labelY2 = laneH+topText*0.62;
+  ctx.fillStyle="#38bdf8"; ctx.fillText("hafif gaz (H₂) — karşı odada: "+recvL+" / "+W.pl.length, sw*0.03, labelY1);
+  ctx.fillStyle="#fb7185"; ctx.fillText("ağır gaz (O₂) — karşı odada: "+recvH+" / "+W.ph.length, sw*0.03, labelY2);
 
-  var bx=sw*0.62, by=sh*0.04, bw=sw*0.34;
-  ctx.fillStyle="#1f2937"; ctx.fillRect(bx,by,bw,12); ctx.fillRect(bx,by+18,bw,12);
-  ctx.fillStyle="#38bdf8"; ctx.fillRect(bx,by,bw*(recvL/Math.max(W.pl.length,1)),12);
-  ctx.fillStyle="#fb7185"; ctx.fillRect(bx,by+18,bw*(recvH/Math.max(W.ph.length,1)),12);
+  var barH = clamp(topText*0.4, 7, 12);
+  var bx = sw-barW-8;
+  ctx.fillStyle="#1f2937"; ctx.fillRect(bx, labelY1-barH*0.85, barW, barH);
+  ctx.fillStyle="#38bdf8"; ctx.fillRect(bx, labelY1-barH*0.85, barW*(recvL/Math.max(W.pl.length,1)), barH);
+  ctx.fillStyle="#1f2937"; ctx.fillRect(bx, labelY2-barH*0.85, barW, barH);
+  ctx.fillStyle="#fb7185"; ctx.fillRect(bx, labelY2-barH*0.85, barW*(recvH/Math.max(W.ph.length,1)), barH);
 }
 
 /* ============================================================
