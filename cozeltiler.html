@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Çözeltiler Laboratuvarı — 10. Sınıf Kimya Simülasyonu</title>
+<link rel="manifest" href="cozeltiler-manifest.json">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Çözeltiler Lab.">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#070a12; --panel:#0e1420cc; --line:#233047;
+    --ink:#f1f5f9; --dim:#94a3b8; --faint:#64748b;
+    --amber:#fbbf24; --sky:#38bdf8; --pink:#fb7185; --mint:#34d399;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+  #app{display:flex;flex-direction:column;height:100dvh;padding:12px 16px 12px;max-width:1280px;margin:0 auto}
+
+  nav.chapters{flex:0 0 auto;display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+  nav.chapters::-webkit-scrollbar{height:5px}
+  nav.chapters::-webkit-scrollbar-thumb{background:#233047;border-radius:4px}
+  .chip{flex:0 0 auto;font-size:11.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);
+    background:rgba(15,23,42,.55);color:var(--faint);cursor:pointer;white-space:nowrap;transition:.15s}
+  .chip:hover{color:#e2e8f0;border-color:#3b4a63}
+  .chip.on{background:var(--amber);color:#1a1300;border-color:var(--amber);font-weight:700}
+
+  header{flex:0 0 auto}
+  .step{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin:0;font-weight:700}
+  h1{font-size:clamp(18px,2.7vw,30px);line-height:1.18;font-weight:800;margin:5px 0 0;color:#fff}
+  .say{font-size:clamp(13.5px,1.5vw,17px);line-height:1.5;color:#cbd5e1;margin:7px 0 0;max-width:86ch}
+
+  .stage{flex:1 1 auto;min-height:0;position:relative;margin:10px 0;border-radius:18px;overflow:hidden;
+    border:1px solid var(--line); background:#050810;
+    box-shadow:inset 0 0 60px rgba(0,0,0,.5)}
+  canvas{display:block;width:100%;height:100%}
+
+  .slab{position:absolute;top:50%;right:4%;transform:translateY(-50%);z-index:5;
+    width:min(560px,92%);max-height:88%;overflow:auto;
+    background:rgba(10,15,26,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border:1px solid var(--line);border-radius:16px;padding:18px 20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .hide{display:none!important}
+  .hud{position:absolute;right:10px;bottom:10px;z-index:4;font:600 12.5px ui-monospace,monospace;
+    color:var(--dim);background:rgba(10,15,26,.68);border:1px solid rgba(35,48,71,.9);border-radius:10px;
+    padding:8px 12px;line-height:1.6;pointer-events:none;white-space:nowrap;text-align:right}
+  @media (max-width:640px){ .hud{font-size:11px;padding:6px 9px;right:8px;bottom:8px} }
+  @media (max-height:520px){ .hud{font-size:10px;padding:4px 8px;line-height:1.32} }
+  .slab h2{margin:0 0 12px;font-size:15px;color:var(--amber);text-transform:uppercase;letter-spacing:.08em}
+  table{width:100%;border-collapse:collapse;font-size:clamp(12.5px,1.5vw,16px)}
+  td{padding:10px 8px;border-bottom:1px solid var(--line)}
+  td:first-child{color:var(--amber);width:42%}
+  td:nth-child(2){color:var(--faint);width:6%;text-align:center}
+  td:last-child{color:var(--sky)}
+  ul.big{font-size:clamp(13px,1.55vw,17px);line-height:1.6;color:#e2e8f0;padding-left:20px;margin:0}
+  ul.big li{margin-bottom:11px}
+  ul.big b{color:var(--amber)}
+
+  footer{flex:0 0 auto;border-top:1px solid var(--line);padding-top:9px}
+  .note{font-size:clamp(11.5px,1.2vw,13.5px);color:#cbd5e1;margin:0 0 9px;line-height:1.6}
+  .note b{color:var(--mint);font-weight:700}
+  .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  button{font-size:13px;padding:9px 14px;border-radius:9px;border:1px solid var(--line);
+    background:transparent;color:var(--dim);cursor:pointer;transition:.15s}
+  button:hover{border-color:#475569;color:#e2e8f0}
+  button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  button.on{background:var(--sky);color:#0a0e1a;border-color:var(--sky);font-weight:600}
+  button.nav{background:var(--amber);color:#0a0e1a;border-color:var(--amber);font-weight:700;padding:10px 18px}
+  button:disabled{opacity:.35;cursor:default}
+  .count{font-size:12px;color:var(--faint);margin-left:auto;font-variant-numeric:tabular-nums}
+  .ctrl{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);
+    border:1px solid var(--line);border-radius:9px;padding:6px 10px;background:rgba(15,23,42,.5)}
+  .ctrl input[type=range]{width:130px;accent-color:var(--amber)}
+  .ctrl .val{color:var(--sky);font-variant-numeric:tabular-nums;min-width:44px;text-align:right}
+  .navlink{font-size:12px;color:var(--dim);text-decoration:none;padding:9px 14px;border:1px solid var(--line);
+    border-radius:9px;transition:.15s}
+  .navlink:hover{color:#e2e8f0;border-color:#475569}
+
+  .qopt{display:block;width:100%;text-align:left;margin-bottom:8px;padding:10px 12px;font-size:13.5px;line-height:1.4}
+  .qopt.correct{background:#065f46;border-color:#34d399;color:#d1fae5}
+  .qopt.wrong{background:#7f1d1d;border-color:#fb7185;color:#fee2e2}
+  .qsteps{margin-top:12px;padding:12px;background:rgba(15,23,42,.6);border:1px solid var(--line);
+    border-radius:10px;font-size:13.5px;line-height:1.75;color:#cbd5e1}
+  .qsteps div{margin-bottom:4px}
+  .qsteps b{color:var(--mint)}
+</style>
+</head>
+<body>
+<div id="app">
+  <nav class="chapters" id="chapters"></nav>
+  <header>
+    <p class="step" id="step"></p>
+    <h1 id="title"></h1>
+    <p class="say" id="say"></p>
+  </header>
+
+  <div class="stage">
+    <canvas id="cv"></canvas>
+    <div class="hud hide" id="hud"></div>
+    <div class="slab hide" id="slab"></div>
+  </div>
+
+  <footer>
+    <p class="note" id="note"></p>
+    <div class="bar">
+      <button class="nav" id="prev">← geri</button>
+      <button class="nav" id="next">ileri →</button>
+      <span id="extra" style="display:flex;gap:8px;flex-wrap:wrap"></span>
+      <span class="count" id="count"></span>
+      <a class="navlink" href="index.html">⇆ Gazlar Simülasyonu</a>
+      <button id="fs">tam ekran</button>
+    </div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   YARDIMCI FONKSİYONLAR
+   ============================================================ */
+var DEG = Math.PI/180;
+function rnd(a,b){ return a+Math.random()*(b-a); }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function hexToRgb(hex){
+  hex=hex.replace('#','');
+  if (hex.length===3) hex=hex.split('').map(function(c){return c+c;}).join('');
+  var n=parseInt(hex,16); return [n>>16&255, n>>8&255, n&255];
+}
+function shade(hex, amt){
+  var rgb=hexToRgb(hex);
+  function f(v){ v = amt>0 ? v+(255-v)*amt : v+v*amt; return Math.max(0,Math.min(255,Math.round(v))); }
+  return 'rgb('+f(rgb[0])+','+f(rgb[1])+','+f(rgb[2])+')';
+}
+function lighten(hex,amt){ return shade(hex, Math.abs(amt)); }
+function darken(hex,amt){ return shade(hex, -Math.abs(amt)); }
+function mixColor(hexA,hexB,t){
+  var a=hexToRgb(hexA), b=hexToRgb(hexB);
+  var r=Math.round(a[0]+(b[0]-a[0])*t), g=Math.round(a[1]+(b[1]-a[1])*t), bl=Math.round(a[2]+(b[2]-a[2])*t);
+  return 'rgb('+r+','+g+','+bl+')';
+}
+
+/* ============================================================
+   İÇERİK: BÖLÜMLER VE SAHNELER
+   Türkiye Yüzyılı Maarif Modeli — 10. Sınıf Kimya, "Karışımlar /
+   Çözeltiler" temasına dayanır: çözünme süreci ve zayıf
+   etkileşimler, derişim birimleri (molarite, ppm) ve
+   değerlendirme (alıştırma) soruları.
+   ============================================================ */
+var CHAPTERS = [
+  {label:"Başlangıç", from:0},
+  {label:"Suyun Yapısı", from:1},
+  {label:"Çözünme: İyonik", from:2},
+  {label:"Çözünme: Moleküler", from:3},
+  {label:"Benzer Benzeri Çözer", from:4},
+  {label:"Çözünürlük Etmenleri", from:5},
+  {label:"Molarite", from:6},
+  {label:"ppm", from:7},
+  {label:"Diğer Derişim Birimleri", from:8},
+  {label:"Alıştırmalar", from:9},
+  {label:"Özet", from:10}
+];
+
+var SCENES = [
+{
+  mode:"intro", ambient:true, bg:{mol:1.2, volML:600},
+  step:"Başlangıç",
+  title:"Gözle Göremediğimiz Bir Karışımı Birlikte Modelleyeceğiz",
+  say:"Çayına attığın şeker neden görünmez olur? Deniz suyu neden tuzludur ama tuz taneleri görünmez? Bir çözelti, aslında çözücü ve çözünen taneciklerinin birbirine karıştığı, gözle ayırt edemediğimiz homojen bir karışımdır.",
+  note:"🎯 <b>Bu laboratuvarda ne yapacağız?</b> Önce çözünmeyi taneciksel düzeyde, zayıf etkileşimler (iyon-dipol, hidrojen bağı, London kuvvetleri) üzerinden inceleyeceğiz. Sonra molarite ve ppm derişim birimlerini simüle edeceğiz. Son bölümde değişkenlerle üretilen sorularla kendini sınayacaksın. Kaydırıcılarla SEN kontrol edeceksin."
+},
+{
+  mode:"water", ambient:false,
+  step:"1. Bölüm · Suyun Yapısı",
+  title:"Su Neden 'Evrensel Çözücü' Olarak Anılır?",
+  say:"Su molekülü doğrusal değil, açılı (bükülmüş) bir şekle sahiptir. Oksijen, hidrojenden daha elektronegatiftir; bu yüzden ortak elektronları kendine daha çok çeker. Sonuç: oksijen ucu kısmi negatif (δ⁻), hidrojen uçları kısmi pozitif (δ⁺) yüklenir.",
+  note:"📖 <b>Tanım:</b> Böyle, molekül içinde yük dağılımı eşit olmayan moleküllere <b>polar (kutuplu) molekül</b> denir. 🔎 <b>Gözlem:</b> Dönen molekülün uçlarındaki δ⁺ / δ⁻ etiketlerine bak. 🌍 <b>Günlük hayat:</b> Suyun bu kutuplu yapısı, onu iyonik ve polar maddeler için mükemmel bir çözücü yapar — sıradaki iki bölümde bunu göreceğiz."
+},
+{
+  mode:"ionic", ambient:false, progress0:0,
+  step:"2. Bölüm · Çözünme Süreci — İyonik Katı",
+  title:"Su Molekülleri NaCl Kristalini Nasıl Parçalıyor?",
+  say:"Aşağıdaki kaydırıcıyı sağa çek: su molekülleri kristal örgüdeki Na⁺ ve Cl⁻ iyonlarının etrafını sarar. Su'nun δ⁻ (oksijen) ucu Na⁺'a, δ⁺ (hidrojen) ucu Cl⁻'a yönelir — iyonlar teker teker örgüden koparılıp çözeltiye karışır.",
+  note:"📖 <b>İyon-dipol etkileşimi:</b> Bir iyon ile polar bir molekülün kutupları arasındaki çekim kuvvetidir; bu, iyonik katıların suda çözünmesini sağlayan temel zayıf etkileşimdir. 🔎 <b>Gözlem:</b> Her çözünmüş iyonun etrafında dönen su moleküllerine <b>hidratasyon (sulanma) küresi</b> denir. ⚠️ <b>Dikkat:</b> Bu sırada Na⁺–Cl⁻ arasındaki güçlü iyonik bağ kırılmaz gibi görünse de, aslında çok sayıda zayıf iyon-dipol etkileşimi bir araya gelerek bu güçlü çekimi yener."
+},
+{
+  mode:"molecular", ambient:false, progress0:0,
+  step:"3. Bölüm · Çözünme Süreci — Moleküler Katı (Hidrojen Bağı)",
+  title:"Şeker (Glikoz) Suda Nasıl Kayboluyor?",
+  say:"Glikoz iyonik değildir; çözünmesi farklı bir yolla gerçekleşir. Glikoz molekülündeki -OH (hidroksil) grupları, su molekülleriyle hidrojen bağı kurar. Kaydırıcıyı hareket ettirerek çözünmeyi izle: kesikli sarı çizgiler oluşan hidrojen bağlarını gösterir.",
+  note:"📖 <b>Hidrojen bağı:</b> O, N, F gibi küçük ve elektronegatif bir atoma bağlı H atomu ile komşu molekülün ortaklanmamış elektron çifti arasındaki güçlü bir dipol-dipol etkileşimidir. 💡 <b>Çıkarım:</b> Molekülünde -OH veya -NH grupları bulunan polar moleküller (şeker, alkol, asetik asit gibi) suda kolayca çözünür. 🌍 <b>Günlük hayat:</b> Sofra şekerinin suda hızla çözünmesinin, ama yağın çözünmemesinin sebebi tam olarak budur."
+},
+{
+  mode:"like", ambient:false, solute0:"polar",
+  step:"4. Bölüm · Zayıf Etkileşimler ve 'Benzer Benzeri Çözer' İlkesi",
+  title:"Hangi Madde, Hangi Çözücüde Çözünür?",
+  say:"Aşağıda iki kap var: solda polar çözücü SU, sağda apolar çözücü HEGZAN. Alttaki düğmelerle çözünen maddeyi (polar tuz ya da apolar iyot) seç ve her iki kapta ne olduğunu gözlemle.",
+  note:"📖 <b>Benzer benzeri çözer (like dissolves like):</b> Polar/iyonik maddeler polar çözücülerde, apolar maddeler apolar çözücülerde çözünür. 💡 <b>Neden?</b> Çözünme, yalnızca çözücü-çözünen çekimi çözünen-çözünen ve çözücü-çözücü çekimlerini yenebildiğinde gerçekleşir; polar-apolar eşleşmede zayıf etkileşimler bunun için yetersiz kalır. 🌍 <b>Günlük hayat:</b> Leke çıkarıcıların yağ lekelerinde su yerine apolar çözücü içermesinin nedeni de budur."
+},
+{
+  mode:"temp", ambient:false, T0:25,
+  step:"5. Bölüm · Çözünürlüğü Etkileyen Etmenler",
+  title:"Sıcaklık, Çözünürlüğü Nasıl Etkiler?",
+  say:"Kaydırıcıyla sıcaklığı artır. Katı maddenin (mor taneler) çözünme hızının nasıl arttığına, buna karşılık sudaki çözünmüş gazın (kabarcıklar hâlinde) nasıl kaçtığına dikkat et.",
+  note:"📖 <b>Genel eğilim:</b> Sıcaklık arttıkça katıların (ve çoğu sıvının) çözünürlüğü artar; gazların çözünürlüğü ise azalır. 🔎 <b>Neden farklı?</b> Katı çözünmesi genellikle ısı gerektiren (endotermik) bir süreçtir — sıcaklık artışı bu süreci hızlandırır. Gazlarda ise sıcaklık artışı taneciklerin kinetik enerjisini artırarak çözeltiden kaçmalarını kolaylaştırır. ⚠️ <b>Not:</b> Basınç da gazların çözünürlüğünü doğrudan etkiler (Henry Yasası) — gazlı içeceğin kapağını açtığında sönmesi bu yüzdendir. 🌍 <b>Günlük hayat:</b> Sıcak çayda şekerin, soğuk çaydan çok daha hızlı çözünmesi."
+},
+{
+  mode:"molarity", ambient:false, mol0:1.0, vol0:500,
+  step:"6. Bölüm · Derişim Birimleri — Molarite (M)",
+  title:"Bir Çözeltinin Molar Derişimini Nasıl Buluruz?",
+  say:"Kaydırıcılarla hem mol sayısını (n) hem de çözelti hacmini (V) değiştir. Çözeltinin rengi ve içindeki tanecik yoğunluğu, hesaplanan molariteyle birlikte değişiyor.",
+  note:"📖 <b>Molarite (M):</b> 1 litre çözeltide çözünmüş madde miktarının mol cinsinden değeridir → <b>M = n / V</b> (birim: mol/L). ⚠️ <b>Dikkat:</b> V, ÇÖZELTİNİN toplam hacmidir, yalnızca çözücünün hacmi değil! mL'yi litreye çevirmeyi unutma: V(L) = V(mL) / 1000. 🌍 <b>Günlük hayat:</b> İlaç şişelerinde ve laboratuvar çözeltilerinde derişim çoğunlukla molarite (mol/L ya da M) ile ifade edilir."
+},
+{
+  mode:"ppm", ambient:false, ppm0:100,
+  step:"7. Bölüm · Derişim Birimleri — ppm (Milyonda Bir Parça)",
+  title:"Çok Küçük Derişimleri Nasıl İfade Ederiz?",
+  say:"Aşağıdaki her kare, 1.000.000 tanecikten 2.500'ünü temsil ediyor. Kaydırıcıyla ppm değerini değiştir ve kaç karenin renklendiğini gözlemle — bazı derişimler o kadar küçüktür ki yüzde (%) ile ifade etmek pratik değildir.",
+  note:"📖 <b>ppm (parts per million):</b> ppm = (çözünen kütlesi / çözelti kütlesi) × 10⁶. 💡 <b>Pratik kısayol:</b> Seyreltik sulu çözeltilerde çözeltinin yoğunluğu ~1 g/mL kabul edilirse, 1 ppm ≈ 1 mg çözünen / 1 L çözelti. 🌍 <b>Günlük hayat:</b> İçme suyu standartlarında klor, kurşun gibi maddelerin sınır değerleri; havadaki karbon dioksit derişimi (~420 ppm) hep bu birimle ifade edilir."
+},
+{
+  mode:"slab", slab:"other", bgMode:"ppm", bg:{ppm:400}, ambient:true,
+  step:"8. Bölüm · Diğer Derişim Birimleri",
+  title:"Kütlece Yüzde, Molalite, Mol Kesri ve ppb",
+  say:"",
+  note:"📖 Molarite ve ppm dışında da sık kullanılan derişim birimleri vardır. Hangisinin kullanılacağı; sıcaklıkla hacmin değişip değişmediğine (molalite sıcaklıktan etkilenmez, molarite etkilenir) ya da derişimin ne kadar küçük olduğuna göre değişir. 🔎 <b>Karşılaştır:</b> Bir laboratuvar raporunda hangi birimi görmeyi beklersin: kan şekeri ölçümünde mi, deniz suyundaki tuz oranında mı, havadaki kirletici gaz derişiminde mi?"
+},
+{
+  mode:"quiz", ambient:true,
+  step:"9. Bölüm · Alıştırmalar",
+  title:"Değişkenlerle Soru Çöz",
+  say:"",
+  note:"🧠 <b>Nasıl çalışır?</b> 'Yeni Soru' her tıklandığında farklı sayılarla ya da farklı bir kavram sorusuyla karşılaşırsın. Kavram sorularında bir seçenek işaretle; hesaplama sorularında önce kendin çöz, sonra 'Çözümü Göster' ile adım adım kontrol et."
+},
+{
+  mode:"slab", slab:"end", bgMode:"like", bg:{solute:"polar"}, ambient:true,
+  step:"Kapanış",
+  title:"Aklında Kalacak Altı Cümle",
+  say:"",
+  note:"🎯 <b>Kapanış sorusu:</b> 500 mL çözeltide 2 mol NaOH varsa molarite kaçtır? (4 mol/L — Alıştırmalar bölümüne dönüp benzer bir soru üretebilirsin.) 🧠 <b>Kendini sına:</b> Bu altı cümleyi kendi cümlelerinle bir arkadaşına anlatabilir misin?"
+}
+];
+
+var OTHER_HTML =
+ '<h2>Diğer Derişim Birimleri</h2><table>' +
+ '<tr><td>Kütlece Yüzde (%)</td><td>→</td><td>% = (çözünen kütlesi / çözelti kütlesi) × 100</td></tr>' +
+ '<tr><td>Hacimce Yüzde (%)</td><td>→</td><td>% = (çözünenin hacmi / çözeltinin hacmi) × 100</td></tr>' +
+ '<tr><td>Molarite (M)</td><td>→</td><td>M = mol çözünen / L çözelti</td></tr>' +
+ '<tr><td>Molalite (m)</td><td>→</td><td>m = mol çözünen / kg çözücü (sıcaklıktan etkilenmez)</td></tr>' +
+ '<tr><td>Mol Kesri (X)</td><td>→</td><td>X_A = n_A / (n_A + n_B + …)</td></tr>' +
+ '<tr><td>ppm</td><td>→</td><td>ppm = (çözünen kütlesi / çözelti kütlesi) × 10⁶</td></tr>' +
+ '<tr><td>ppb</td><td>→</td><td>ppb = (çözünen kütlesi / çözelti kütlesi) × 10⁹</td></tr>' +
+ '</table>';
+
+var END_HTML =
+ '<h2>Özet</h2><ul class="big">' +
+ '<li><b>Çözünme,</b> çözücü-çözünen tanecikleri arasındaki zayıf etkileşimlerin (iyon-dipol, hidrojen bağı, dipol-dipol, London kuvvetleri) çözünen-çözünen ve çözücü-çözücü çekimlerinin yerini almasıyla gerçekleşir.</li>' +
+ '<li><b>"Benzer benzeri çözer":</b> polar/iyonik maddeler polar çözücülerde, apolar maddeler apolar çözücülerde çözünür.</li>' +
+ '<li><b>Sıcaklık arttıkça</b> katıların çözünürlüğü genelde artar, gazların çözünürlüğü ise azalır.</li>' +
+ '<li><b>Molarite (M),</b> 1 litre çözeltide çözünmüş mol sayısıdır: M = n / V.</li>' +
+ '<li><b>ppm,</b> çok küçük derişimleri ifade eder: ppm = (çözünen kütlesi / çözelti kütlesi) × 10⁶.</li>' +
+ '<li><b>Derişim birimleri</b> aynı çözelti hakkında farklı bilgiler taşır; seçim, bağlama (laboratuvar, çevre, tıp…) göre değişir.</li>' +
+ '</ul>';
+
+/* ============================================================
+   ÇİZİM YARDIMCILARI — su/iyon/molekül ikonları, beher
+   ============================================================ */
+function dot(x,y,r,color){ ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); ctx.fillStyle=color; ctx.fill(); }
+
+function drawWater(x,y,ang,s,alpha){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(ang);
+  ctx.globalAlpha = alpha==null?1:alpha;
+  var hd=7*s, hang=52*DEG;
+  ctx.strokeStyle="rgba(226,232,240,.5)"; ctx.lineWidth=1.3*s;
+  [hang,-hang].forEach(function(a){
+    var hx=Math.cos(a)*hd, hy=Math.sin(a)*hd;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(hx,hy); ctx.stroke();
+  });
+  var og=ctx.createRadialGradient(-1.2*s,-1.2*s,0.4*s,0,0,4.2*s);
+  og.addColorStop(0,"#fecaca"); og.addColorStop(1,"#dc2626");
+  ctx.beginPath(); ctx.arc(0,0,4.2*s,0,6.2832); ctx.fillStyle=og; ctx.fill();
+  [hang,-hang].forEach(function(a){
+    var hx=Math.cos(a)*hd, hy=Math.sin(a)*hd;
+    var hg=ctx.createRadialGradient(hx-0.7*s,hy-0.7*s,0.2*s,hx,hy,2.6*s);
+    hg.addColorStop(0,"#ffffff"); hg.addColorStop(1,"#cbd5e1");
+    ctx.beginPath(); ctx.arc(hx,hy,2.6*s,0,6.2832); ctx.fillStyle=hg; ctx.fill();
+  });
+  ctx.globalAlpha=1;
+  ctx.restore();
+}
+
+function drawIon(x,y,r,color,label){
+  var g=ctx.createRadialGradient(x-r*0.3,y-r*0.3,r*0.1,x,y,r);
+  g.addColorStop(0,lighten(color,.5)); g.addColorStop(1,darken(color,.3));
+  ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); ctx.fillStyle=g; ctx.fill();
+  ctx.strokeStyle="rgba(0,0,0,.4)"; ctx.lineWidth=1; ctx.stroke();
+  ctx.fillStyle="#0a0e1a"; ctx.font="700 "+Math.max(7,r*0.8)+"px system-ui";
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(label, x, y+0.5);
+  ctx.textBaseline="alphabetic";
+}
+
+function drawSolute(x,y,s){
+  ctx.save(); ctx.translate(x,y);
+  ctx.beginPath();
+  for (var i=0;i<6;i++){ var a=i/6*6.2832, px=Math.cos(a)*s, py=Math.sin(a)*s; i?ctx.lineTo(px,py):ctx.moveTo(px,py); }
+  ctx.closePath();
+  var g=ctx.createRadialGradient(-s*0.3,-s*0.3,s*0.1,0,0,s);
+  g.addColorStop(0,"#fde68a"); g.addColorStop(1,"#b45309");
+  ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle="rgba(0,0,0,.35)"; ctx.lineWidth=1.1; ctx.stroke();
+  [[-1,-1],[1,1]].forEach(function(d){
+    var ox=d[0]*s*1.25, oy=d[1]*s*1.25;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(ox,oy);
+    ctx.strokeStyle="rgba(226,232,240,.5)"; ctx.lineWidth=1.1; ctx.stroke();
+    ctx.beginPath(); ctx.arc(ox,oy,s*0.28,0,6.2832); ctx.fillStyle="#f87171"; ctx.fill();
+  });
+  ctx.restore();
+  return {ohPoints:[[x-s*1.25,y-s*1.25],[x+s*1.25,y+s*1.25]]};
+}
+
+/* Genel amaçlı beher: cam kap + sıvı dolum. bounds: parçacıkların
+   serbest hareket edeceği iç alan. */
+function makeBounds(x,y,w,h,pad){ return {left:x+pad, right:x+w-pad, top:y+pad, bottom:y+h-pad}; }
+function drawBeaker(x,y,w,h,fillFrac,topColor,botColor,label){
+  var r=Math.min(14,w*0.08);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+  ctx.lineTo(x,y+h-r);
+  ctx.quadraticCurveTo(x,y+h,x+r,y+h);
+  ctx.lineTo(x+w-r,y+h);
+  ctx.quadraticCurveTo(x+w,y+h,x+w,y+h-r);
+  ctx.lineTo(x+w,y);
+  ctx.strokeStyle="rgba(180,220,255,.5)"; ctx.lineWidth=2.4; ctx.lineJoin="round";
+  ctx.stroke();
+
+  var liqTop = y+h-h*clamp(fillFrac,0,1);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x+2, Math.max(liqTop,y+2));
+  ctx.lineTo(x+2,y+h-r);
+  ctx.quadraticCurveTo(x+2,y+h-2,x+r,y+h-2);
+  ctx.lineTo(x+w-r,y+h-2);
+  ctx.quadraticCurveTo(x+w-2,y+h-2,x+w-2,y+h-r);
+  ctx.lineTo(x+w-2, Math.max(liqTop,y+2));
+  ctx.closePath(); ctx.clip();
+  var grad=ctx.createLinearGradient(0,liqTop,0,y+h);
+  grad.addColorStop(0,topColor); grad.addColorStop(1,botColor);
+  ctx.fillStyle=grad; ctx.fillRect(x,liqTop,w,h);
+  ctx.strokeStyle="rgba(255,255,255,.22)"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(x,liqTop); ctx.lineTo(x+w,liqTop); ctx.stroke();
+  ctx.restore();
+
+  if (label){
+    ctx.fillStyle="#94a3b8"; ctx.font="700 12px system-ui"; ctx.textAlign="center";
+    ctx.fillText(label, x+w/2, y+h+18);
+  }
+  ctx.restore();
+  return {x:x,y:y,w:w,h:h,liqTop:liqTop,bounds:makeBounds(x,liqTop,w,(y+h-liqTop),7)};
+}
+function drawMiniBar(x,y,w,h,frac,color,label){
+  ctx.fillStyle="#1f2937"; ctx.fillRect(x,y,w,h);
+  ctx.fillStyle=color; ctx.fillRect(x,y,w*clamp(frac,0,1),h);
+  ctx.strokeStyle="#334155"; ctx.lineWidth=1; ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle="#94a3b8"; ctx.font="600 10px system-ui"; ctx.textAlign="left";
+  ctx.fillText(label, x, y-4);
+}
+
+/* Basit 2B parçacık fiziği (beher içi serbest hareket + duvar sekmesi) */
+function spawnP(b, speed, extra){
+  var p={x:rnd(b.left,b.right), y:rnd(b.top,b.bottom), vx:rnd(-speed,speed), vy:rnd(-speed,speed)};
+  if (extra) for (var k in extra) p[k]=extra[k];
+  return p;
+}
+function stepP(list,b){
+  for (var i=0;i<list.length;i++){
+    var p=list[i];
+    p.x+=p.vx; p.y+=p.vy;
+    if (p.x<b.left){ p.x=b.left; p.vx=-p.vx; }
+    if (p.x>b.right){ p.x=b.right; p.vx=-p.vx; }
+    if (p.y<b.top){ p.y=b.top; p.vy=-p.vy; }
+    if (p.y>b.bottom){ p.y=b.bottom; p.vy=-p.vy; }
+  }
+}
+
+/* ============================================================
+   HUD PANELİ
+   ============================================================ */
+var hudEl = document.getElementById("hud");
+var hudLast = "";
+function hudPanel(sw,sh,lines){
+  var html = lines.map(function(l){ return l.replace(/</g,"&lt;"); }).join("<br>");
+  if (html!==hudLast){ hudEl.innerHTML=html; hudLast=html; }
+  hudEl.className="hud";
+  hudEl.style.top="auto"; hudEl.style.bottom="10px"; hudEl.style.right="10px";
+}
+
+/* ============================================================
+   SAHNE DÜNYALARI (state) — her sahne modu için "world" nesnesi
+   ============================================================ */
+var W=null;
+
+function buildWater(){ return {kind:"water", angle:0}; }
+
+function buildIonic(){
+  var ions=[], rows=4, cols=4;
+  for (var r=0;r<rows;r++) for (var c=0;c<cols;c++){
+    ions.push({row:r, col:c, sign:((r+c)%2===0)?1:-1, dissolved:false, x:0, y:0, vx:0, vy:0, escortPhase:rnd(0,6.283)});
+  }
+  return {kind:"ionic", ions:ions, progress:0, inited:false, frame:0, free:[]};
+}
+function buildMolecular(){
+  var mols=[];
+  for (var i=0;i<9;i++) mols.push({idx:i, dissolved:false, x:0, y:0, vx:0, vy:0});
+  return {kind:"molecular", mols:mols, progress:0, inited:false, frame:0, free:[]};
+}
+function buildLike(bg){ return {kind:"like", solute:(bg&&bg.solute)||"polar", inited:false, frame:0}; }
+function buildTemp(bg){ return {kind:"temp", T:(bg&&bg.T!=null)?bg.T:25, inited:false, dissolved:[], bubbles:[]}; }
+function buildMolarity(bg){ return {kind:"molarity", mol:(bg&&bg.mol!=null)?bg.mol:1.0, volML:(bg&&bg.volML!=null)?bg.volML:500, inited:false, parts:[]}; }
+function buildPpm(bg){ return {kind:"ppm", ppm:(bg&&bg.ppm!=null)?bg.ppm:100}; }
+function buildQuiz(){ return {kind:"quiz", currentQ:null, parts:[]}; }
+
+function initScene(){
+  var sc=SCENES[idx];
+  if (sc.mode==="water") W=buildWater();
+  else if (sc.mode==="ionic") W=buildIonic();
+  else if (sc.mode==="molecular") W=buildMolecular();
+  else if (sc.mode==="like") W=buildLike(sc.bg||{solute:sc.solute0});
+  else if (sc.mode==="temp") W=buildTemp(sc.bg||{T:sc.T0});
+  else if (sc.mode==="molarity") W=buildMolarity(sc.bg||{mol:sc.mol0, volML:sc.vol0});
+  else if (sc.mode==="ppm") W=buildPpm(sc.bg||{ppm:sc.ppm0});
+  else if (sc.mode==="intro") W=buildMolarity(sc.bg);
+  else if (sc.mode==="quiz") W=buildQuiz();
+  else if (sc.mode==="slab"){
+    var bm=sc.bgMode||"molarity";
+    if (bm==="ppm") W=buildPpm(sc.bg);
+    else if (bm==="like") W=buildLike(sc.bg);
+    else if (bm==="ionic") W=buildIonic();
+    else W=buildMolarity(sc.bg);
+  }
+  else W=null;
+}
+
+/* ============================================================
+   SAHNE ÇİZİMLERİ
+   ============================================================ */
+function fit(){
+  var r=cv.getBoundingClientRect();
+  var dpr=window.devicePixelRatio||1;
+  if (cv.width!==Math.round(r.width*dpr)){ cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr); }
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return [r.width, r.height];
+}
+
+function drawWaterScene(sc){
+  var d=fit(), sw=d[0], sh=d[1];
+  ctx.clearRect(0,0,sw,sh);
+  W.angle=(W.angle||0)+0.006;
+  var cx=sw*0.5, cy=sh*0.46, s=Math.min(sw,sh)*0.028;
+  var ang=W.angle, hd=s*1.7, hang=52*DEG;
+
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(ang);
+  ctx.strokeStyle="rgba(226,232,240,.55)"; ctx.lineWidth=s*0.35;
+  [hang,-hang].forEach(function(a){
+    var hx=Math.cos(a)*hd, hy=Math.sin(a)*hd;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(hx,hy); ctx.stroke();
+  });
+  var og=ctx.createRadialGradient(-s*0.3,-s*0.3,s*0.1,0,0,s);
+  og.addColorStop(0,"#fecaca"); og.addColorStop(1,"#dc2626");
+  ctx.beginPath(); ctx.arc(0,0,s,0,6.2832); ctx.fillStyle=og; ctx.fill();
+  ctx.strokeStyle="rgba(0,0,0,.35)"; ctx.lineWidth=1.4; ctx.stroke();
+  [hang,-hang].forEach(function(a){
+    var hx=Math.cos(a)*hd, hy=Math.sin(a)*hd;
+    var hg=ctx.createRadialGradient(hx-s*0.15,hy-s*0.15,s*0.05,hx,hy,s*0.62);
+    hg.addColorStop(0,"#ffffff"); hg.addColorStop(1,"#cbd5e1");
+    ctx.beginPath(); ctx.arc(hx,hy,s*0.62,0,6.2832); ctx.fillStyle=hg; ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.3)"; ctx.lineWidth=1; ctx.stroke();
+  });
+  ctx.restore();
+
+  function rot(x,y){ return [cx+x*Math.cos(ang)-y*Math.sin(ang), cy+x*Math.sin(ang)+y*Math.cos(ang)]; }
+  var oPos=rot(0,-s*1.9);
+  ctx.textAlign="center"; ctx.font="700 16px system-ui";
+  ctx.fillStyle="#fca5a5"; ctx.fillText("δ⁻  (O)", oPos[0], oPos[1]);
+  [hang,-hang].forEach(function(a){
+    var hx=Math.cos(a)*hd*1.55, hy=Math.sin(a)*hd*1.55;
+    var p=rot(hx,hy);
+    ctx.fillStyle="#93c5fd"; ctx.font="700 15px system-ui";
+    ctx.fillText("δ⁺  (H)", p[0], p[1]);
+  });
+
+  ctx.fillStyle="#64748b"; ctx.font="600 12px system-ui";
+  ctx.fillText("H₂O — bükülmüş (açılı) ve polar bir molekül", cx, cy+sh*0.30);
+  hudEl.className="hud hide";
+}
+
+function drawIonicScene(sc){
+  var d=fit(), sw=d[0], sh=d[1];
+  ctx.clearRect(0,0,sw,sh);
+  var bw=Math.min(sw*0.62,520), bh=sh*0.74;
+  var bx=sw*0.5-bw/2, by=sh*0.12;
+  var bk=drawBeaker(bx,by,bw,bh,0.88,"rgba(147,197,253,.26)","rgba(30,64,120,.55)","Su (H₂O)");
+  var b=bk.bounds;
+
+  if (!W.inited){
+    W.free=[];
+    for (var i=0;i<24;i++) W.free.push(spawnP(b,0.32,{ang:rnd(0,6.283),spin:rnd(-0.01,0.01)}));
+    W.inited=true;
+  }
+  var latX=b.left+30, latY=b.bottom-24, sp=15;
+  var numDissolve=Math.round((W.progress||0)/100*W.ions.length);
+  for (var k=0;k<W.ions.length;k++){
+    var ion=W.ions[k];
+    var should = k<numDissolve;
+    if (should && !ion.dissolved){
+      ion.dissolved=true;
+      ion.x=latX+ion.col*sp; ion.y=latY-ion.row*sp;
+      ion.vx=rnd(-0.16,0.16); ion.vy=rnd(-0.22,-0.05);
+    }
+    if (!should && ion.dissolved) ion.dissolved=false;
+  }
+
+  stepP(W.free,b);
+  W.free.forEach(function(p){ p.ang+=p.spin; });
+  W.free.forEach(function(p){ drawWater(p.x,p.y,p.ang,0.9,0.85); });
+
+  W.ions.forEach(function(ion){
+    if (!ion.dissolved){
+      var x=latX+ion.col*sp, y=latY-ion.row*sp;
+      drawIon(x,y,6.6, ion.sign>0?"#a78bfa":"#34d399", ion.sign>0?"Na⁺":"Cl⁻");
+    }
+  });
+
+  W.frame++;
+  var dissolvedIons=[];
+  W.ions.forEach(function(ion){
+    if (!ion.dissolved) return;
+    ion.x+=ion.vx; ion.y+=ion.vy;
+    if (ion.x<b.left+10){ ion.x=b.left+10; ion.vx=Math.abs(ion.vx); }
+    if (ion.x>b.right-10){ ion.x=b.right-10; ion.vx=-Math.abs(ion.vx); }
+    if (ion.y<b.top+10){ ion.y=b.top+10; ion.vy=Math.abs(ion.vy); }
+    if (ion.y>latY+6){ ion.y=latY+6; ion.vy=-Math.abs(ion.vy); }
+    dissolvedIons.push(ion);
+  });
+  dissolvedIons.forEach(function(ion){
+    var shellR=15;
+    for (var e=0;e<3;e++){
+      var a=ion.escortPhase + e*(6.2832/3) + W.frame*0.01;
+      var ex=ion.x+Math.cos(a)*shellR, ey=ion.y+Math.sin(a)*shellR;
+      var toIon=Math.atan2(ion.y-ey, ion.x-ex);
+      var watAng = ion.sign>0 ? toIon : toIon+Math.PI;
+      drawWater(ex,ey,watAng,0.85,0.95);
+    }
+    drawIon(ion.x,ion.y,6.6, ion.sign>0?"#a78bfa":"#34d399", ion.sign>0?"Na⁺":"Cl⁻");
+  });
+
+  if (!sc.ambient) hudPanel(sw,sh,["Çözünen iyon: "+dissolvedIons.length+" / "+W.ions.length, "İlerleme: %"+Math.round(W.progress||0)]);
+  else hudEl.className="hud hide";
+}
+
+function nearestFree(pt,list,n,maxR){
+  var arr=list.map(function(p){ return {p:p, d:Math.sqrt((p.x-pt.x)*(p.x-pt.x)+(p.y-pt.y)*(p.y-pt.y))}; })
+    .filter(function(o){ return o.d<maxR; });
+  arr.sort(function(a,b){ return a.d-b.d; });
+  var out=[]; for (var i=0;i<Math.min(n,arr.length);i++) out.push(arr[i].p);
+  return out;
+}
+
+function drawMolecularScene(sc){
+  var d=fit(), sw=d[0], sh=d[1];
+  ctx.clearRect(0,0,sw,sh);
+  var bw=Math.min(sw*0.62,520), bh=sh*0.74;
+  var bx=sw*0.5-bw/2, by=sh*0.12;
+  var bk=drawBeaker(bx,by,bw,bh,0.88,"rgba(147,197,253,.26)","rgba(30,64,120,.55)","Su (H₂O)");
+  var b=bk.bounds;
+
+  if (!W.inited){
+    W.free=[];
+    for (var i=0;i<22;i++) W.free.push(spawnP(b,0.3,{ang:rnd(0,6.283),spin:rnd(-0.01,0.01)}));
+    W.inited=true;
+  }
+  var latX=b.left+34, latY=b.bottom-30, sp=17;
+  var cols=3;
+  var numDissolve=Math.round((W.progress||0)/100*W.mols.length);
+  for (var k=0;k<W.mols.length;k++){
+    var m=W.mols[k];
+    var should=k<numDissolve;
+    if (should && !m.dissolved){
+      m.dissolved=true;
+      m.x=latX+(k%cols)*sp; m.y=latY-Math.floor(k/cols)*sp;
+      m.vx=rnd(-0.14,0.14); m.vy=rnd(-0.2,-0.04);
+    }
+    if (!should && m.dissolved) m.dissolved=false;
+  }
+
+  stepP(W.free,b);
+  W.free.forEach(function(p){ p.ang+=p.spin; });
+  W.free.forEach(function(p){ drawWater(p.x,p.y,p.ang,0.85,0.85); });
+
+  W.mols.forEach(function(m){
+    if (!m.dissolved){
+      var x=latX+(m.idx%cols)*sp, y=latY-Math.floor(m.idx/cols)*sp;
+      drawSolute(x,y,7);
+    }
+  });
+
+  var dissolvedMols=[];
+  W.mols.forEach(function(m){
+    if (!m.dissolved) return;
+    m.x+=m.vx; m.y+=m.vy;
+    if (m.x<b.left+10){ m.x=b.left+10; m.vx=Math.abs(m.vx); }
+    if (m.x>b.right-10){ m.x=b.right-10; m.vx=-Math.abs(m.vx); }
+    if (m.y<b.top+10){ m.y=b.top+10; m.vy=Math.abs(m.vy); }
+    if (m.y>latY+6){ m.y=latY+6; m.vy=-Math.abs(m.vy); }
+    dissolvedMols.push(m);
+  });
+  dissolvedMols.forEach(function(m){
+    var ohp=drawSolute(m.x,m.y,7).ohPoints;
+    var near=nearestFree({x:m.x,y:m.y}, W.free, 2, 46);
+    ctx.setLineDash([3,3]); ctx.strokeStyle="rgba(253,224,71,.7)"; ctx.lineWidth=1.2;
+    near.forEach(function(w){
+      ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(w.x,w.y); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+  });
+
+  if (!sc.ambient) hudPanel(sw,sh,["Çözünen molekül: "+dissolvedMols.length+" / "+W.mols.length, "İlerleme: %"+Math.round(W.progress||0), "kesikli çizgi = hidrojen bağı"]);
+  else hudEl.className="hud hide";
+}
+
+function drawLikeScene(sc){
+  var d=fit(), sw=d[0], sh=d[1];
+  ctx.clearRect(0,0,sw,sh);
+  var gap=sw*0.06;
+  var bw=Math.min((sw-gap-sw*0.14)/2, 300), bh=sh*0.62;
+  var by=sh*0.18;
+  var bx1=sw*0.5-gap/2-bw, bx2=sw*0.5+gap/2;
+  var bkW=drawBeaker(bx1,by,bw,bh,0.82,"rgba(147,197,253,.26)","rgba(30,64,120,.55)","Su (polar)");
+  var bkH=drawBeaker(bx2,by,bw,bh,0.82,"rgba(253,230,138,.26)","rgba(120,90,20,.55)","Hegzan (apolar)");
+
+  if (!W.inited){
+    W.pW=[]; W.pH=[];
+    for (var i=0;i<36;i++){ W.pW.push(spawnP(bkW.bounds,0.28)); W.pH.push(spawnP(bkH.bounds,0.28)); }
+    W.inited=true;
+  }
+  W.frame=(W.frame||0)+1;
+  var soluteColor = W.solute==="polar" ? "#a78bfa" : "#f472b6";
+  var dissW = W.solute==="polar";
+  var dissH = W.solute==="apolar";
+
+  if (dissW){ stepP(W.pW,bkW.bounds); W.pW.forEach(function(p){ dot(p.x,p.y,3.2,soluteColor); }); }
+  else drawClump(bkW,soluteColor);
+
+  if (dissH){ stepP(W.pH,bkH.bounds); W.pH.forEach(function(p){ dot(p.x,p.y,3.2,soluteColor); }); }
+  else drawClump(bkH,soluteColor);
+
+  if (!sc.ambient){
+    ctx.textAlign="center"; ctx.font="700 13px system-ui";
+    ctx.fillStyle = dissW? "#34d399":"#fb7185";
+    ctx.fillText(dissW?"✓ Çözünür":"✗ Çözünmez", bx1+bw/2, by-10);
+    ctx.fillStyle = dissH? "#34d399":"#fb7185";
+    ctx.fillText(dissH?"✓ Çözünür":"✗ Çözünmez", bx2+bw/2, by-10);
+    var soluteLabel = W.solute==="polar" ? "Tuz (NaCl) — polar/iyonik" : "İyot (I₂) — apolar";
+    hudPanel(sw,sh,["Seçilen çözünen: "+soluteLabel]);
+  } else hudEl.className="hud hide";
+}
+function drawClump(bk,color){
+  var cx=bk.bounds.left+(bk.bounds.right-bk.bounds.left)*0.5;
+  var cy=bk.bounds.bottom-14;
+  var t=(W.frame||0)*0.04;
+  for (var i=0;i<14;i++){
+    var a=i*0.9+t*0.3, rr=9+(i%3)*3;
+    dot(cx+Math.cos(a)*rr*0.6, cy+Math.sin(a)*rr*0.25, 3.4, color);
+  }
+}
+
+function drawTempScene(sc){
+  var d=fit(), sw=d[0], sh=d[1];
+  ctx.clearRect(0,0,sw,sh);
+  var bw=Math.min(sw*0.5,360), bh=sh*0.66;
+  var bx=sw*0.5-bw/2, by=sh*0.2;
+  var bk=drawBeaker(bx,by,bw,bh,0.8,"rgba(147,197,253,.26)","rgba(30,64,120,.55)","Su");
+  var b=bk.bounds;
+
+  var maxDissolve=40;
+  var target=Math.round(maxDissolve*clamp((W.T||25)/100,0,1));
+  while (W.dissolved.length<target) W.dissolved.push(spawnP(b,0.22));
+  while (W.dissolved.length>target) W.dissolved.pop();
+  stepP(W.dissolved,b);
+  W.dissolved.forEach(function(p){ dot(p.x,p.y,3,"#a78bfa"); });
+
+  var solidCount=Math.round((maxDissolve-target)/maxDissolve*12);
+  var cx=b.left+22, cy=b.bottom-12;
+  for (var i=0;i<solidCount;i++){ var a=i*1.3; dot(cx+Math.cos(a)*(6+i*0.6), cy+Math.sin(a)*(4+i*0.3)*0.5, 3.2, "#a78bfa"); }
+
+  if (Math.random() < 0.015+((W.T||25)/100)*0.11){
+    W.bubbles.push({x:rnd(b.left+10,b.right-10), y:b.bottom-4, r:rnd(2,4), vy:-rnd(0.3,0.6)});
+  }
+  W.bubbles.forEach(function(bub){ bub.y+=bub.vy; });
+  W.bubbles=W.bubbles.filter(function(bub){ return bub.y>b.top; });
+  W.bubbles.forEach(function(bub){
+    ctx.beginPath(); ctx.arc(bub.x,bub.y,bub.r,0,6.2832);
+    ctx.strokeStyle="rgba(226,232,240,.6)"; ctx.lineWidth=1; ctx.stroke();
+  });
+
+  if (!sc.ambient){
+    drawMiniBar(sw*0.06, sh*0.14, 130,10, target/maxDissolve, "#a78bfa", "Katı çözünürlüğü");
+    drawMiniBar(sw*0.06, sh*0.14+26, 130,10, 1-target/maxDissolve, "#38bdf8", "Gaz çözünürlüğü");
+    hudPanel(sw,sh,["Sıcaklık: "+Math.round(W.T)+" °C"]);
+  } else hudEl.className="hud hide";
+}
+
+function drawMolarityScene(sc){
+  var d=fit(), sw=d[0], sh=d[1];
+  ctx.clearRect(0,0,sw,sh);
+  var bw=Math.min(sw*0.42,300), bh=sh*0.66;
+  var bx=sw*0.5-bw/2, by=sh*0.22;
+  var M=W.mol/(W.volML/1000);
+  var fillFrac=clamp(W.volML/1000,0.08,1);
+  var t=clamp(M/4,0,1);
+  var topColor=mixColor("#dbeafe","#1e3a8a",t*0.6);
+  var botColor=mixColor("#93c5fd","#1e1b4b",t);
+  var bk=drawBeaker(bx,by,bw,bh,fillFrac,topColor,botColor,"Çözelti");
+  var b=bk.bounds;
+
+  if (!W.inited){ W.parts=[]; W.inited=true; }
+  var target=clamp(Math.round(M*22),3,140);
+  while (W.parts.length<target) W.parts.push(spawnP(b,0.26));
+  while (W.parts.length>target) W.parts.pop();
+  stepP(W.parts,b);
+  W.parts.forEach(function(p){ dot(p.x,p.y,2.8,"#fde68a"); });
+
+  if (!sc.ambient){
+    ctx.fillStyle="#fff"; ctx.font="700 18px system-ui"; ctx.textAlign="left";
+    ctx.fillText("M = n / V = "+M.toFixed(2)+" mol/L", sw*0.06, sh*0.13);
+    hudPanel(sw,sh,["n = "+W.mol.toFixed(1)+" mol", "V = "+W.volML+" mL = "+(W.volML/1000).toFixed(2)+" L", "M = "+M.toFixed(2)+" mol/L"]);
+  } else hudEl.className="hud hide";
+}
+
+var PPM_STEPS=[1,2,5,10,25,50,100,250,500,1000,2000,5000];
+function drawPpmScene(sc){
+  var d=fit(), sw=d[0], sh=d[1];
+  ctx.clearRect(0,0,sw,sh);
+  var cols=25, rows=16;
+  var cell=Math.min((sw*0.72)/cols,(sh*0.5)/rows,18);
+  var gx=sw*0.5-(cols*cell)/2, gy=sh*0.2;
+  var weight=1000000/(cols*rows);
+  var ppm=W.ppm||0;
+  var n=clamp(Math.round(ppm/weight), ppm>0?1:0, cols*rows);
+  var k=0;
+  for (var r=0;r<rows;r++){
+    for (var c=0;c<cols;c++){
+      var x=gx+c*cell, y=gy+r*cell;
+      ctx.fillStyle = k<n ? "#fbbf24" : "rgba(148,163,184,.25)";
+      ctx.fillRect(x+1,y+1,cell-2,cell-2);
+      k++;
+    }
+  }
+  if (!sc.ambient){
+    ctx.fillStyle="#fff"; ctx.font="700 16px system-ui"; ctx.textAlign="center";
+    ctx.fillText(ppm+" ppm  =  1.000.000 tanecikten "+ppm+" tanesi", sw*0.5, gy-14);
+    ctx.font="600 12px system-ui"; ctx.fillStyle="#94a3b8";
+    ctx.fillText("seyreltik sulu çözeltide yaklaşık "+ppm+" mg çözünen / 1 L çözelti", sw*0.5, gy+rows*cell+22);
+    hudPanel(sw,sh,["ppm = (çözünen kütlesi / çözelti kütlesi) × 10⁶","her kare ≈ "+Math.round(weight)+" taneciği temsil eder"]);
+  } else hudEl.className="hud hide";
+}
+
+function drawQuizAmbient(){
+  var d=fit(), sw=d[0], sh=d[1];
+  ctx.clearRect(0,0,sw,sh);
+  var bw=Math.min(sw*0.36,260), bh=sh*0.58;
+  var bx=sw*0.08, by=sh*0.22;
+  var bk=drawBeaker(bx,by,bw,bh,0.75,"rgba(147,197,253,.24)","rgba(30,64,120,.5)","Çözelti");
+  if (!W.parts.length) for (var i=0;i<22;i++) W.parts.push(spawnP(bk.bounds,0.22));
+  stepP(W.parts,bk.bounds);
+  W.parts.forEach(function(p){ dot(p.x,p.y,3,"#fbbf24"); });
+  hudEl.className="hud hide";
+}
+
+function loop(){
+  var sc=SCENES[idx];
+  var mode = sc.mode==="slab" ? (sc.bgMode||"molarity") : sc.mode;
+  if (mode==="water" && W) drawWaterScene(sc);
+  else if (mode==="ionic" && W) drawIonicScene(sc);
+  else if (mode==="molecular" && W) drawMolecularScene(sc);
+  else if (mode==="like" && W) drawLikeScene(sc);
+  else if (mode==="temp" && W) drawTempScene(sc);
+  else if (mode==="molarity" && W) drawMolarityScene(sc);
+  else if ((mode==="intro") && W) drawMolarityScene(sc);
+  else if (mode==="ppm" && W) drawPpmScene(sc);
+  else if (mode==="quiz" && W) drawQuizAmbient();
+  requestAnimationFrame(loop);
+}
+
+/* ============================================================
+   SORU BANKASI — kavramsal (sabit) + değişkenli (üretilen)
+   ============================================================ */
+var CONCEPT_Q = [
+  {
+    type:"mcq",
+    stem:"NaCl'nin suda çözünmesini sağlayan temel etkileşim aşağıdakilerden hangisidir?",
+    options:["İyon-dipol etkileşimi","London (dispersiyon) kuvvetleri","Kovalent bağ","Metalik bağ"],
+    correct:0,
+    explain:"Su molekülünün kutupları (δ⁺/δ⁻), kristaldeki Na⁺ ve Cl⁻ iyonlarını çeker; çok sayıda bu zayıf iyon-dipol etkileşimi bir araya gelerek iyonik bağı yener."
+  },
+  {
+    type:"mcq",
+    stem:"Glikoz (C₆H₁₂O₆) molekülünün suda kolayca çözünmesinin temel nedeni nedir?",
+    options:["Glikozun iyonik bir bileşik olması","Glikozdaki -OH gruplarının su ile hidrojen bağı kurması","Glikozun apolar olması","Su moleküllerinin apolar olması"],
+    correct:1,
+    explain:"Glikoz molekülündeki çok sayıda -OH grubu, su molekülleriyle güçlü hidrojen bağları kurar; bu da glikozun suda kolayca dağılmasını sağlar."
+  },
+  {
+    type:"mcq",
+    stem:"İyot (I₂) katısı suda çözünmezken karbon tetraklorür (CCl₄) içinde kolayca çözünür. Bu durum en iyi hangi ilkeyle açıklanır?",
+    options:["Su her maddeyi çözer","İyot iyonik bir bileşiktir","'Benzer benzeri çözer' — ikisi de apolar olduğundan London kuvvetleriyle uyum sağlar","CCl₄ polar bir çözücüdür"],
+    correct:2,
+    explain:"I₂ ve CCl₄ apolar moleküllerdir; aralarındaki London (dispersiyon) kuvvetleri, apolar-apolar çözünmeyi mümkün kılar. Polar su ile apolar iyot arasında bu uyum yoktur."
+  },
+  {
+    type:"mcq",
+    stem:"Aşağıdaki etkileşimlerden hangisi genellikle en zayıfıdır?",
+    options:["Kovalent bağ","İyon-dipol etkileşimi","Hidrojen bağı","London (dispersiyon) kuvvetleri"],
+    correct:3,
+    explain:"Güçlüden zayıfa sıralama yaklaşık şöyledir: kovalent/iyonik bağ > iyon-dipol > hidrojen bağı > dipol-dipol > London kuvvetleri. London kuvvetleri en zayıf zayıf etkileşimdir."
+  },
+  {
+    type:"mcq",
+    stem:"Sıcaklık arttıkça katı maddelerin ve gazların çözünürlüğü genellikle nasıl değişir?",
+    options:["İkisi de artar","İkisi de azalır","Katılarınki artar, gazlarınki azalır","Katılarınki azalır, gazlarınki artar"],
+    correct:2,
+    explain:"Katı çözünmesi çoğunlukla endotermiktir; sıcaklık artışı bu süreci hızlandırır. Gazlarda ise artan kinetik enerji, tanecik lerin sıvıdan kaçmasını kolaylaştırır ve çözünürlük azalır."
+  },
+  {
+    type:"mcq",
+    stem:"Seyreltik bir sulu çözeltide 1 ppm derişim yaklaşık olarak neye eşdeğerdir?",
+    options:["1 mg çözünen / 1 L çözelti","1 g çözünen / 1 L çözelti","1 mol çözünen / 1 L çözelti","1 g çözünen / 100 g çözelti"],
+    correct:0,
+    explain:"Seyreltik sulu çözeltilerde çözelti yoğunluğu ~1 g/mL kabul edilebildiğinden, ppm = (çözünen kütlesi/çözelti kütlesi)×10⁶ ifadesi yaklaşık olarak mg/L'ye karşılık gelir."
+  },
+  {
+    type:"mcq",
+    stem:"Bir öğrenci yağı suyla karıştırıp çalkalıyor ama bir süre sonra yağ ve su yeniden ayrışıyor. Bunun nedeni nedir?",
+    options:["Yağ, suyla iyon-dipol etkileşimi kurar","Yağ apolar, su polardır; aralarında yeterince güçlü bir etkileşim oluşmaz","Yağ suda kimyasal tepkimeye girer","Su, yağdan daha yoğun olduğu için her zaman ayrışır"],
+    correct:1,
+    explain:"Apolar yağ molekülleri ile polar su molekülleri arasında güçlü bir çekim oluşmaz; su-su ve yağ-yağ arasındaki kendi etkileşimleri daha baskın kalır, bu yüzden çözünme gerçekleşmez."
+  }
+];
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function genMolarity(){
+  var subs=[{f:"NaCl",M:58.5},{f:"NaOH",M:40},{f:"CaCO₃",M:100},{f:"C₆H₁₂O₆ (glikoz)",M:180},{f:"KNO₃",M:101},{f:"CuSO₄",M:160}];
+  var s=pick(subs);
+  var molFactor=pick([0.5,1,1.5,2,2.5,3]);
+  var mass=+(s.M*molFactor).toFixed(1);
+  var V=pick([100,200,250,500,1000,2000]);
+  var mol=mass/s.M, Vl=V/1000, M=mol/Vl;
+  if (Math.random()<0.5){
+    return {
+      type:"calc",
+      stem: mass+" g "+s.f+" katısı yeterli miktarda suda çözülüp toplam hacim "+V+" mL'ye tamamlanıyor. ("+s.f+" molar kütlesi = "+s.M+" g/mol) Bu çözeltinin molar derişimi (molarite) kaç mol/L'dir?",
+      steps:[
+        "1) Mol sayısı: n = kütle / molar kütle = "+mass+" g ÷ "+s.M+" g/mol = "+mol.toFixed(3)+" mol",
+        "2) Hacmi litreye çevir: V = "+V+" mL = "+Vl.toFixed(3)+" L",
+        "3) Molarite: M = n / V = "+mol.toFixed(3)+" mol ÷ "+Vl.toFixed(3)+" L = "+M.toFixed(2)+" mol/L"
+      ],
+      answer: M.toFixed(2)+" mol/L"
+    };
+  } else {
+    var Mtarget=pick([0.1,0.2,0.5,1,2]);
+    var neededMass=+(Mtarget*Vl*s.M).toFixed(2);
+    return {
+      type:"calc",
+      stem: Mtarget+" mol/L derişiminde "+V+" mL çözelti hazırlamak için kaç gram "+s.f+" (molar kütle = "+s.M+" g/mol) tartılmalıdır?",
+      steps:[
+        "1) Hacmi litreye çevir: V = "+V+" mL = "+Vl.toFixed(3)+" L",
+        "2) Gereken mol sayısı: n = M × V = "+Mtarget+" mol/L × "+Vl.toFixed(3)+" L = "+(Mtarget*Vl).toFixed(3)+" mol",
+        "3) Kütle: kütle = n × molar kütle = "+(Mtarget*Vl).toFixed(3)+" mol × "+s.M+" g/mol = "+neededMass+" g"
+      ],
+      answer: neededMass+" g "+s.f
+    };
+  }
+}
+
+function genPpm(){
+  var mg=pick([5,10,20,25,40,50,100]);
+  var kg=pick([1,2,5,10,20]);
+  var ppm=+(mg/kg).toFixed(2);
+  if (Math.random()<0.5){
+    return {
+      type:"calc",
+      stem: kg+" kg sulu çözeltide "+mg+" mg madde çözünmüştür. Bu çözeltinin derişimi kaç ppm'dir?",
+      steps:[
+        "1) Çözünen kütlesini grama çevir: "+mg+" mg = "+(mg/1000)+" g",
+        "2) Çözelti kütlesini grama çevir: "+kg+" kg = "+(kg*1000)+" g",
+        "3) ppm = (çözünen kütlesi / çözelti kütlesi) × 10⁶ = ("+(mg/1000)+" ÷ "+(kg*1000)+") × 10⁶ = "+ppm+" ppm",
+        "4) Kısayol: seyreltik çözeltide ppm ≈ mg çözünen ÷ kg çözelti = "+mg+" ÷ "+kg+" = "+ppm+" ppm"
+      ],
+      answer: ppm+" ppm"
+    };
+  } else {
+    var ppmGiven=pick([2,5,10,20,25,50,100]);
+    var kgGiven=pick([1,2,5,10]);
+    var mgResult=+(ppmGiven*kgGiven).toFixed(2);
+    return {
+      type:"calc",
+      stem: kgGiven+" kg sulu çözeltinin derişimi "+ppmGiven+" ppm ise, çözünmüş madde kaç mg'dır?",
+      steps:[
+        "1) Kısayolu kullan: ppm ≈ mg çözünen ÷ kg çözelti  ⇒  mg çözünen = ppm × kg çözelti",
+        "2) mg çözünen = "+ppmGiven+" × "+kgGiven+" = "+mgResult+" mg"
+      ],
+      answer: mgResult+" mg"
+    };
+  }
+}
+
+function pickQuestion(){
+  var r=Math.random();
+  if (r<0.4) return pick(CONCEPT_Q);
+  else if (r<0.72) return genMolarity();
+  else return genPpm();
+}
+
+function renderQuizPanel(){
+  slab.innerHTML="";
+  var h2=document.createElement("h2"); h2.textContent="🎲 Alıştırma Sorusu"; slab.appendChild(h2);
+  var p=document.createElement("p");
+  p.style.cssText="font-size:15px;line-height:1.6;color:#e2e8f0;margin:0 0 14px";
+  p.textContent=W.currentQ.stem;
+  slab.appendChild(p);
+
+  var q=W.currentQ;
+  if (q.type==="mcq"){
+    var box=document.createElement("div");
+    var exp=document.createElement("div"); exp.className="qsteps hide";
+    q.options.forEach(function(opt,i){
+      var b=document.createElement("button"); b.className="qopt"; b.textContent=opt;
+      b.onclick=function(){
+        Array.prototype.forEach.call(box.children,function(c,ci){
+          c.disabled=true;
+          if (ci===q.correct) c.className="qopt correct";
+          else if (ci===i) c.className="qopt wrong";
+        });
+        exp.className="qsteps"; exp.textContent="💡 "+q.explain;
+      };
+      box.appendChild(b);
+    });
+    slab.appendChild(box);
+    slab.appendChild(exp);
+  } else {
+    var solveBtn=document.createElement("button"); solveBtn.className="nav"; solveBtn.textContent="Çözümü Göster";
+    var stepsDiv=document.createElement("div"); stepsDiv.className="qsteps hide";
+    q.steps.forEach(function(s){ var row=document.createElement("div"); row.textContent=s; stepsDiv.appendChild(row); });
+    var ansRow=document.createElement("div"); ansRow.style.marginTop="8px";
+    var ansB=document.createElement("b"); ansB.textContent="Cevap: "+q.answer; ansRow.appendChild(ansB);
+    stepsDiv.appendChild(ansRow);
+    solveBtn.onclick=function(){
+      var showing = stepsDiv.className.indexOf("hide")===-1;
+      stepsDiv.className = showing ? "qsteps hide" : "qsteps";
+      solveBtn.textContent = showing ? "Çözümü Göster" : "Çözümü Gizle";
+    };
+    slab.appendChild(solveBtn);
+    slab.appendChild(stepsDiv);
+  }
+
+  var newWrap=document.createElement("div"); newWrap.style.marginTop="14px";
+  var newBtn=document.createElement("button"); newBtn.className="nav"; newBtn.textContent="🔄 Yeni Soru";
+  newBtn.onclick=function(){ W.currentQ=pickQuestion(); renderQuizPanel(); };
+  newWrap.appendChild(newBtn);
+  slab.appendChild(newWrap);
+
+  slab.className="slab";
+}
+
+/* ============================================================
+   ARAYÜZ
+   ============================================================ */
+var idx=0;
+var cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+var slab=document.getElementById("slab");
+
+function buildChapters(){
+  var nav=document.getElementById("chapters");
+  nav.innerHTML="";
+  CHAPTERS.forEach(function(ch){
+    var b=document.createElement("button");
+    b.className="chip"; b.textContent=ch.label;
+    b.onclick=function(){ idx=ch.from; render(); };
+    nav.appendChild(b);
+  });
+}
+function syncChapters(){
+  var nav=document.getElementById("chapters");
+  var activeI=0;
+  for (var i=0;i<CHAPTERS.length;i++) if (idx>=CHAPTERS[i].from) activeI=i;
+  Array.prototype.forEach.call(nav.children, function(c,i){ c.className = i===activeI ? "chip on" : "chip"; });
+}
+
+function mkSliderControl(label,min,max,step,val,onchange,decimals){
+  var wrap=document.createElement("span"); wrap.className="ctrl";
+  var lab=document.createElement("span"); lab.textContent=label;
+  var inp=document.createElement("input"); inp.type="range"; inp.min=min; inp.max=max; inp.step=step; inp.value=val;
+  var out=document.createElement("span"); out.className="val";
+  out.textContent = decimals!=null ? Number(val).toFixed(decimals) : val;
+  inp.oninput=function(){
+    var v=Number(this.value);
+    out.textContent = decimals!=null ? v.toFixed(decimals) : v;
+    onchange(v);
+  };
+  wrap.appendChild(lab); wrap.appendChild(inp); wrap.appendChild(out);
+  return wrap;
+}
+
+function render(){
+  var sc=SCENES[idx];
+  document.getElementById("step").textContent=sc.step;
+  document.getElementById("title").textContent=sc.title;
+  document.getElementById("say").textContent=sc.say;
+  document.getElementById("say").className = sc.say ? "say" : "say hide";
+  document.getElementById("note").innerHTML=sc.note;
+  document.getElementById("count").textContent=(idx+1)+" / "+SCENES.length;
+  document.getElementById("prev").disabled = idx===0;
+  document.getElementById("next").disabled = idx===SCENES.length-1;
+  syncChapters();
+
+  hudEl.className="hud hide"; hudLast="";
+
+  var isSlab = sc.mode==="slab";
+  var isQuiz = sc.mode==="quiz";
+  slab.className = (isSlab || isQuiz) ? "slab" : "slab hide";
+
+  initScene();
+
+  if (isSlab){
+    slab.innerHTML = sc.slab==="other" ? OTHER_HTML : END_HTML;
+  } else if (isQuiz){
+    W.currentQ = pickQuestion();
+    renderQuizPanel();
+  }
+
+  var ex=document.getElementById("extra"); ex.innerHTML="";
+
+  if (sc.mode==="ionic" || sc.mode==="molecular"){
+    ex.appendChild(mkSliderControl("Çözünme İlerlemesi (%)",0,100,5,0,function(v){ W.progress=v; }));
+    var rb=document.createElement("button"); rb.textContent="Sıfırla";
+    rb.onclick=function(){ initScene(); render(); };
+    ex.appendChild(rb);
+  }
+
+  if (sc.mode==="like"){
+    [["polar","Tuz (NaCl) — polar/iyonik"],["apolar","İyot (I₂) — apolar"]].forEach(function(k){
+      var b=document.createElement("button");
+      b.textContent=k[1]; b.className = W.solute===k[0] ? "on" : "";
+      b.onclick=function(){
+        W.solute=k[0];
+        Array.prototype.forEach.call(ex.children, function(c){ if (c.tagName==="BUTTON") c.className=""; });
+        b.className="on";
+      };
+      ex.appendChild(b);
+    });
+  }
+
+  if (sc.mode==="temp"){
+    ex.appendChild(mkSliderControl("Sıcaklık (°C)",0,100,5,W.T,function(v){ W.T=v; }));
+  }
+
+  if (sc.mode==="molarity"){
+    ex.appendChild(mkSliderControl("Mol (n)",0.1,3,0.1,W.mol,function(v){ W.mol=v; },1));
+    ex.appendChild(mkSliderControl("Hacim (mL)",50,1000,50,W.volML,function(v){ W.volML=v; }));
+  }
+
+  if (sc.mode==="ppm"){
+    var wrap=document.createElement("span"); wrap.className="ctrl";
+    var lab=document.createElement("span"); lab.textContent="ppm";
+    var inp=document.createElement("input"); inp.type="range"; inp.min=0; inp.max=PPM_STEPS.length-1; inp.step=1;
+    var startIdx=PPM_STEPS.indexOf(W.ppm); inp.value = startIdx>=0 ? startIdx : 6;
+    var val=document.createElement("span"); val.className="val"; val.textContent=W.ppm;
+    inp.oninput=function(){ W.ppm=PPM_STEPS[Number(this.value)]; val.textContent=W.ppm; };
+    wrap.appendChild(lab); wrap.appendChild(inp); wrap.appendChild(val);
+    ex.appendChild(wrap);
+  }
+}
+
+function go(n){
+  idx=Math.max(0, Math.min(SCENES.length-1, idx+n));
+  render();
+}
+document.getElementById("next").onclick=function(){go(1)};
+document.getElementById("prev").onclick=function(){go(-1)};
+document.getElementById("fs").onclick=function(){
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen();
+};
+document.addEventListener("keydown",function(e){
+  if (e.target && (e.target.type==="range")) return;
+  if (e.key==="ArrowRight"||e.key===" "||e.key==="PageDown"){ e.preventDefault(); go(1); }
+  if (e.key==="ArrowLeft"||e.key==="PageUp"){ e.preventDefault(); go(-1); }
+});
+
+buildChapters();
+render();
+requestAnimationFrame(loop);
+
+if ("serviceWorker" in navigator){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("cozeltiler-sw.js").catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
