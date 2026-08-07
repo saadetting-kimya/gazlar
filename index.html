@@ -3,45 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Gazlar — 10. Sınıf Kinetik Teori Simülasyonu</title>
+<title>Gazlar Laboratuvarı — 3B Gaz Yasaları Modeli</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a0e1a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gazlar Simülasyonu">
+<meta name="apple-mobile-web-app-title" content="Gazlar Laboratuvarı">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <style>
   :root{
-    --bg:#0a0e1a; --panel:#111827; --line:#1f2937;
+    --bg:#070a12; --panel:#0e1420cc; --line:#233047;
     --ink:#f1f5f9; --dim:#94a3b8; --faint:#64748b;
     --amber:#fbbf24; --sky:#38bdf8; --pink:#fb7185; --mint:#34d399;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden}
-  #app{display:flex;flex-direction:column;height:100dvh;padding:18px 20px 12px;max-width:1180px;margin:0 auto}
+  #app{display:flex;flex-direction:column;height:100dvh;padding:12px 16px 12px;max-width:1280px;margin:0 auto}
+
+  nav.chapters{flex:0 0 auto;display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+  nav.chapters::-webkit-scrollbar{height:5px}
+  nav.chapters::-webkit-scrollbar-thumb{background:#233047;border-radius:4px}
+  .chip{flex:0 0 auto;font-size:11.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);
+    background:rgba(15,23,42,.55);color:var(--faint);cursor:pointer;white-space:nowrap;transition:.15s}
+  .chip:hover{color:#e2e8f0;border-color:#3b4a63}
+  .chip.on{background:var(--amber);color:#1a1300;border-color:var(--amber);font-weight:700}
 
   header{flex:0 0 auto}
-  .step{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin:0}
-  h1{font-size:clamp(20px,3.1vw,36px);line-height:1.15;font-weight:700;margin:6px 0 0;color:#fff}
-  .say{font-size:clamp(14px,1.6vw,19px);line-height:1.5;color:#cbd5e1;margin:9px 0 0;max-width:80ch}
+  .step{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin:0;font-weight:700}
+  h1{font-size:clamp(18px,2.7vw,30px);line-height:1.18;font-weight:800;margin:5px 0 0;color:#fff}
+  .say{font-size:clamp(13.5px,1.5vw,17px);line-height:1.5;color:#cbd5e1;margin:7px 0 0;max-width:86ch}
 
-  .stage{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;margin:12px 0}
-  canvas{display:block;width:100%;height:100%;border-radius:16px;background:#070b14;border:1px solid var(--line)}
-  .slab{width:100%;max-width:900px}
-  table{width:100%;border-collapse:collapse;font-size:clamp(13px,1.6vw,18px)}
-  td{padding:11px 10px;border-bottom:1px solid var(--line)}
-  td:first-child{color:var(--amber);width:40%}
+  .stage{flex:1 1 auto;min-height:0;position:relative;margin:10px 0;border-radius:18px;overflow:hidden;
+    border:1px solid var(--line); background:#050810;
+    box-shadow:inset 0 0 60px rgba(0,0,0,.5)}
+  canvas{display:block;width:100%;height:100%}
+
+  .slab{position:absolute;top:50%;right:4%;transform:translateY(-50%);z-index:5;
+    width:min(560px,92%);max-height:88%;overflow:auto;
+    background:rgba(10,15,26,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border:1px solid var(--line);border-radius:16px;padding:18px 20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .hide{display:none!important}
+  .hud{position:absolute;right:10px;bottom:10px;z-index:4;font:600 12.5px ui-monospace,monospace;
+    color:var(--dim);background:rgba(10,15,26,.68);border:1px solid rgba(35,48,71,.9);border-radius:10px;
+    padding:8px 12px;line-height:1.6;pointer-events:none;white-space:nowrap;text-align:right}
+  @media (max-width:640px){ .hud{font-size:11px;padding:6px 9px;right:8px;bottom:8px} }
+  .slab h2{margin:0 0 12px;font-size:15px;color:var(--amber);text-transform:uppercase;letter-spacing:.08em}
+  table{width:100%;border-collapse:collapse;font-size:clamp(12.5px,1.5vw,16px)}
+  td{padding:10px 8px;border-bottom:1px solid var(--line)}
+  td:first-child{color:var(--amber);width:42%}
   td:nth-child(2){color:var(--faint);width:6%;text-align:center}
   td:last-child{color:var(--sky)}
-  ul.big{font-size:clamp(14px,1.75vw,20px);line-height:1.6;color:#e2e8f0;padding-left:22px;margin:0}
-  ul.big li{margin-bottom:12px}
+  ul.big{font-size:clamp(13px,1.55vw,17px);line-height:1.6;color:#e2e8f0;padding-left:20px;margin:0}
+  ul.big li{margin-bottom:11px}
   ul.big b{color:var(--amber)}
 
-  footer{flex:0 0 auto;border-top:1px solid var(--line);padding-top:10px}
-  .note{font-size:clamp(12px,1.25vw,14px);color:var(--mint);margin:0 0 10px;line-height:1.5}
+  footer{flex:0 0 auto;border-top:1px solid var(--line);padding-top:9px}
+  .note{font-size:clamp(11.5px,1.2vw,13.5px);color:#cbd5e1;margin:0 0 9px;line-height:1.6}
   .note b{color:var(--mint);font-weight:700}
   .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   button{font-size:13px;padding:9px 14px;border-radius:9px;border:1px solid var(--line);
@@ -49,18 +70,18 @@
   button:hover{border-color:#475569;color:#e2e8f0}
   button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
   button.on{background:var(--sky);color:#0a0e1a;border-color:var(--sky);font-weight:600}
-  button.nav{background:var(--amber);color:#0a0e1a;border-color:var(--amber);font-weight:600;padding:10px 18px}
+  button.nav{background:var(--amber);color:#0a0e1a;border-color:var(--amber);font-weight:700;padding:10px 18px}
   button:disabled{opacity:.35;cursor:default}
   .count{font-size:12px;color:var(--faint);margin-left:auto;font-variant-numeric:tabular-nums}
-  .hide{display:none!important}
   .ctrl{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);
-    border:1px solid var(--line);border-radius:9px;padding:6px 10px}
+    border:1px solid var(--line);border-radius:9px;padding:6px 10px;background:rgba(15,23,42,.5)}
   .ctrl input[type=range]{width:130px;accent-color:var(--amber)}
   .ctrl .val{color:var(--sky);font-variant-numeric:tabular-nums;min-width:44px;text-align:right}
 </style>
 </head>
 <body>
 <div id="app">
+  <nav class="chapters" id="chapters"></nav>
   <header>
     <p class="step" id="step"></p>
     <h1 id="title"></h1>
@@ -69,6 +90,7 @@
 
   <div class="stage">
     <canvas id="cv"></canvas>
+    <div class="hud hide" id="hud"></div>
     <div class="slab hide" id="slab"></div>
   </div>
 
@@ -87,221 +109,537 @@
 <script>
 "use strict";
 
-/* ============================ SAHNELER ============================ */
+/* ============================================================
+   YARDIMCI FONKSİYONLAR
+   ============================================================ */
+var DEG = Math.PI/180;
+function rnd(a,b){ return a+Math.random()*(b-a); }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function hexToRgb(hex){
+  hex=hex.replace('#','');
+  if (hex.length===3) hex=hex.split('').map(function(c){return c+c;}).join('');
+  var n=parseInt(hex,16); return [n>>16&255, n>>8&255, n&255];
+}
+function shade(hex, amt){
+  var rgb=hexToRgb(hex);
+  function f(v){ v = amt>0 ? v+(255-v)*amt : v+v*amt; return Math.max(0,Math.min(255,Math.round(v))); }
+  return 'rgb('+f(rgb[0])+','+f(rgb[1])+','+f(rgb[2])+')';
+}
+function lighten(hex,amt){ return shade(hex, Math.abs(amt)); }
+function darken(hex,amt){ return shade(hex, -Math.abs(amt)); }
+
+/* ============================================================
+   İÇERİK: SAHNELER (her biri ayrı bir "yasa modülü"; bazıları
+   birlikte "bütünleşik" görünüm sunar). 13-14 yaş / 7-8. sınıf
+   düzeyine uygun, Türkiye Yüzyılı Maarif Modeli'nin yaparak-
+   yaşayarak ve sorgulayarak öğrenme yaklaşımıyla yazılmıştır.
+   ============================================================ */
+var CHAPTERS = [
+  {label:"Başlangıç", from:0},
+  {label:"Gazların Doğası", from:1},
+  {label:"Boyle Yasası", from:4},
+  {label:"Charles Yasası", from:5},
+  {label:"Gay-Lussac Yasası", from:6},
+  {label:"Birleşik Gaz Yasası", from:7},
+  {label:"Avogadro Yasası", from:8},
+  {label:"İdeal Gaz Denklemi", from:9},
+  {label:"Gerçek Gazlar", from:10},
+  {label:"Dalton Yasası", from:11},
+  {label:"Difüzyon", from:12},
+  {label:"Graham Efüzyon Yasası", from:13},
+  {label:"Özet", from:14}
+];
+
 var SCENES = [
 {
-  mode:"box", locked:true, sliders:[], T0:300, n0:44, vol0:0.62,
-  step:"1 / 14 · gazların doğası",
-  title:"Bir kutuya yüzlerce gaz taneciği koysak ne görürüz?",
-  say:"Her tanecik düz bir çizgide gidiyor; duvara ya da başka bir taneciğe çarpınca yön değiştiriyor. Kimse onlara nereye gideceğini söylemiyor — hareket sürekli, düzensiz ve doğrusal.",
-  note:"<b>Sor:</b> “Bu taneciklerin hareketini kim yönetiyor?” Bu, kinetik teorinin ilk varsayımı: gaz tanecikleri sürekli ve rastgele hareket eder, hareketleri arasında enerji kaybı olmaz (esnek çarpışma). Bu simülasyondaki P ve V değerleri gerçek birim değil, oranları görmek için model değerleridir."
+  mode:"box3d", locked:true, sliders:[], T0:300, n0:40, vol0:0.62,
+  step:"Başlangıç",
+  title:"Gözle Göremediğimiz Bir Dünyayı Birlikte Modelleyeceğiz",
+  say:"Şişirdiğin bir balonun, dalış tüpünün ya da içtiğin gazlı içeceğin içinde trilyonlarca küçük tanecik var. Bu taneciklerin davranışını anlarsan; balonun neden patladığını, düdüklü tencerenin neden ıslık çaldığını, dağda kulağının neden “küt” diye açıldığını da anlarsın.",
+  note:"🎯 <b>Bu laboratuvarda ne yapacağız?</b> Üstteki başlıklardan istediğin yasaya doğrudan atlayabilir ya da “ileri” tuşuyla sırayla ilerleyebilirsin. Her bölümde 3 boyutlu, gerçek bir pistonlu kaba benzeyen bir düzenek göreceksin; kaydırıcılarla sıcaklığı, hacmi ya da tanecik sayısını SEN değiştireceksin. Bu, yaparak-yaşayarak ve sorgulayarak öğrenme yaklaşımıdır."
 },
 {
-  mode:"box", locked:true, sliders:[], T0:300, n0:44, vol0:0.62, showPV:false,
-  step:"2 / 14 · gazların doğası",
-  title:"Basınç, duvara çarpan taneciklerin izidir.",
-  say:"Üstteki “P (bağıl)” sayısı, tanecikler duvara ne kadar sık ve ne kadar sert çarptıkça yükseliyor. Basınç aslında saniyedeki çarpışma sıklığının ve şiddetinin bir ölçüsü.",
-  note:"<b>Tanım:</b> “Gaz basıncı, taneciklerin kabın çeperine birim alanda uyguladığı ortalama kuvvettir.” Tek bir çarpışma bir şey söylemez; binlercesi bir ortalama basınç değeri verir."
+  mode:"box3d", locked:true, sliders:[], T0:300, n0:40, vol0:0.62,
+  step:"1. Bölüm · Gazların Doğası — 1/3",
+  title:"Bir Kaba Yüzlerce Tanecik Bıraksak Ne Olur?",
+  say:"Aşağıdaki cam kapta yüzlerce gaz taneciği var. Her biri kendi düz çizgisinde ilerliyor; bir duvara ya da başka bir taneciğe çarpınca yön değiştiriyor. Onlara kimse yol tarif etmiyor.",
+  note:"🔎 <b>Gözlem:</b> Hareket sürekli, düzensiz (rastgele) ve doğrusaldır. 💡 <b>Çıkarım:</b> Bu, kinetik teorinin ilk kuralı: gaz tanecikleri aralıksız hareket eder ve çarpışmalarda enerji kaybetmez. 🌍 <b>Günlük hayat:</b> Kapalı bir odaya sıktığın parfümün kokusunun her yere yayılması, tam olarak bu rastgele hareketin sonucudur."
 },
 {
-  mode:"box", locked:true, sliders:["T"], T0:300, n0:44, vol0:0.62,
-  step:"3 / 14 · gazların doğası",
-  title:"Sıcaklığı artırırsak taneciklere ne olur?",
-  say:"Kaydırıcıyı sağa çek: tanecikler hızlanıyor, duvara daha sık ve daha sert çarpıyorlar — basınç yükseliyor. Sıcaklık, taneciklerin ortalama kinetik enerjisinin bir ölçüsüdür.",
-  note:"<b>Vurgula:</b> Kutu büyümedi, tanecik sayısı da artmadı — tek değişen hız. Basınçtaki artışın tek sebebi bu. <b>Sor:</b> “Sıcaklık düşseydi ne olurdu?”"
+  mode:"box3d", locked:true, sliders:[], T0:300, n0:40, vol0:0.62, showPV:false,
+  step:"1. Bölüm · Gazların Doğası — 2/3",
+  title:"Peki “Basınç” Dediğimiz Şey Aslında Ne?",
+  say:"Sol üstteki “P” değerine bak. Bu sayı, taneciklerin duvara çarpma SIKLIĞI ve ŞİDDETİ arttıkça büyüyor. Basınç, gözle görünmeyen milyonlarca küçük çarpışmanın toplam etkisidir.",
+  note:"📖 <b>Tanım:</b> Gaz basıncı, taneciklerin kabın çeperine (duvarına) birim alanda uyguladığı ortalama kuvvettir. 🌍 <b>Günlük hayat:</b> Şişirdiğin bir bisiklet lastiğinin sertleşmesinin sebebi, içerideki hava taneciklerinin lastik duvarına durmadan çarpmasıdır."
 },
 {
-  mode:"box", locked:false, auto:false, sliders:["V"], T0:300, n0:44, vol0:0.62, showPV:true,
+  mode:"box3d", locked:true, sliders:["T"], T0:300, n0:40, vol0:0.62,
+  step:"1. Bölüm · Gazların Doğası — 3/3",
+  title:"Sıcaklığı Artırırsak Taneciklere Ne Olur?",
+  say:"Aşağıdaki kaydırıcıyı sağa çek: tanecikler hızlanır, duvara daha sık ve daha sert çarpar — basınç yükselir. Sıcaklık, taneciklerin ortalama hareket (kinetik) enerjisinin bir ölçüsüdür.",
+  note:"⚠️ <b>Dikkat et:</b> Kabın boyutu değişmedi, tanecik sayısı da artmadı; tek değişen HIZ. 🔎 <b>Sen dene:</b> Kaydırıcıyı sola çekip sıcaklığı düşürürsen ne olur? 🌍 <b>Günlük hayat:</b> Güneşte kalan bir gazlı içecek şişesinin neden daha “sert” hissettirdiğini artık açıklayabilirsin."
+},
+{
+  mode:"box3d", locked:false, auto:false, sliders:["V"], T0:300, n0:40, vol0:0.62, showPV:true,
   graph:{x:"V", y:"P", xVar:"V", yVar:"P", shape:"hyperbola", color:"#38bdf8"},
-  step:"4 / 14 · Boyle Yasası",
-  title:"Sabit sıcaklıkta hacim küçülürse basınç ne olur?",
-  say:"Pistonu içeri it (hacmi azalt) — sıcaklık sabit kalıyor. Tanecikler aynı hızda ama artık daha dar bir alanda, duvara çok daha sık çarpıyorlar.",
-  note:"<b>İzle:</b> Sağ üstteki P–V grafiğine her ayar bir nokta bırakıyor; noktalar bir hiperbol çiziyor — P·V ≈ sabit. <b>Sor:</b> “Hız artmadığı hâlde çarpma sıklığı neden arttı?”"
+  step:"2. Bölüm · Boyle Yasası",
+  title:"Sıcaklık Sabitken Hacmi Küçültürsek Basınca Ne Olur?",
+  say:"Sağdaki pistonu kaydırıcıyla içeri it (hacmi azalt). Sıcaklık sabit tutuluyor. Tanecikler aynı hızda ama artık daha DAR bir alanda sıkışıyor; bu yüzden duvara çok daha sık çarpıyorlar.",
+  note:"🔎 <b>İzle:</b> Sağ üstteki P–V grafiğine her ayarladığında bir nokta düşüyor; noktalar bir hiperbol (eğri) çiziyor → P·V ≈ sabit. 📖 <b>Boyle Yasası:</b> Sabit sıcaklıkta, bir gazın basıncı hacmiyle ters orantılıdır. 🌍 <b>Günlük hayat:</b> Ucunu kapattığın bir şırıngayı ittiğinde zorlanman, bu yasa yüzündendir."
 },
 {
-  mode:"box", locked:false, auto:true, sliders:["T"], T0:300, n0:40, vol0:0.5,
+  mode:"box3d", locked:false, auto:true, sliders:["T"], T0:300, n0:40, vol0:0.5,
   graph:{x:"T", y:"V", xVar:"T", yVar:"V", shape:"line", color:"#fb7185"},
-  step:"5 / 14 · Charles Yasası",
-  title:"Sabit basınçta ısıtırsak hacim ne olur?",
-  say:"Bu kez piston serbest; dışarıdaki basınç sabit tutuluyor. Sıcaklığı artır: tanecikler hızlanınca basınç önce yükselir, ama piston dengeyi bulana kadar dışarı kayar ve hacim büyür.",
-  note:"<b>Gözle:</b> Pistonu sen itmiyorsun — sistem basıncı eşitleyene kadar kendi kendine ayarlanıyor. V–T grafiği bir doğru çiziyor: V/T ≈ sabit."
+  step:"3. Bölüm · Charles Yasası",
+  title:"Basınç Sabitken Isıtırsak Hacme Ne Olur?",
+  say:"Bu kez piston serbest bırakıldı; dış basınç sabit tutuluyor. Sıcaklığı artır: tanecikler hızlanınca piston kendiliğinden dışarı kayarak hacmi büyütüyor ve basıncı sabit tutuyor.",
+  note:"🔎 <b>Gözlem:</b> Pistonu SEN itmiyorsun; sistem kendi kendine dengeleniyor. 📖 <b>Charles Yasası:</b> Sabit basınçta, bir gazın hacmi mutlak sıcaklığıyla doğru orantılıdır. 🌍 <b>Günlük hayat:</b> Sıcak fırında şişen bir tost paketinin ya da güneşte büyüyen bir balonun sırrı bu."
 },
 {
-  mode:"box", locked:true, sliders:["T"], T0:300, n0:44, vol0:0.55, showPV:false,
+  mode:"box3d", locked:true, sliders:["T"], T0:300, n0:40, vol0:0.55, showPV:false,
   graph:{x:"T", y:"P", xVar:"T", yVar:"P", shape:"line", color:"#34d399"},
-  step:"6 / 14 · Gay-Lussac Yasası",
-  title:"Hacim sabitken ısıtırsak basınç ne olur?",
-  say:"Bu kutunun duvarları hareket etmiyor — kilitli. Sıcaklığı artır ve basıncın nasıl tırmandığını izle.",
-  note:"<b>Sor:</b> “Charles'takinden farkı ne?” Orada piston kaçıp basıncı sabit tutuyordu; burada kaçacak yer yok, bütün enerji artışı basınca yansıyor. P–T grafiği bir doğru: P/T ≈ sabit."
+  step:"4. Bölüm · Gay-Lussac Yasası",
+  title:"Hacim Sabitken Isıtırsak Basınca Ne Olur?",
+  say:"Bu kabın iki ucu da cıvatalarla sabitlenmiş — piston yok, hacim değişemiyor. Sıcaklığı artır ve göstergenin ibresinin nasıl tırmandığını izle.",
+  note:"🔎 <b>Karşılaştır:</b> Charles'ta piston kaçarak basıncı sabit tutuyordu; burada kaçacak yer yok — enerjideki artışın tamamı doğrudan basınca yansıyor. 📖 <b>Gay-Lussac Yasası:</b> Sabit hacimde, basınç mutlak sıcaklıkla doğru orantılıdır. 🌍 <b>Günlük hayat:</b> Deodorant kutusunda yazan “50°C üzerinde patlayabilir” uyarısının bilimsel sebebi budur."
 },
 {
-  mode:"slab", slab:"combined",
-  step:"7 / 14 · toparlama",
-  title:"Üç yasa aslında tek bir cümle.",
-  say:"Boyle, Charles ve Gay-Lussac aynı gerçeğin farklı kesitleri: basınç, hacim ve sıcaklık birbirine bağlı. Sabit tuttuğun değişkeni kaldırırsan üçü tek denklemde birleşir.",
-  note:"<b>Sor:</b> “Bu üç yasadan hangisinde piston hareket etmiyordu?” (Gay-Lussac — hacim sabit.)"
+  mode:"box3d", locked:false, auto:false, sliders:["T","V"], T0:320, n0:40, vol0:0.55, showPV:true, combined:true,
+  step:"5. Bölüm · Birleşik Gaz Yasası",
+  title:"Üç Yasa Aslında Tek Bir Cümle",
+  say:"Şimdi hem sıcaklığı hem hacmi SEN kontrol ediyorsun. Boyle, Charles ve Gay-Lussac aynı anda burada çalışıyor. Alt paneldeki P·V/T oranının nasıl hep aynı kaldığına dikkat et.",
+  note:"📖 <b>Birleşik Gaz Yasası:</b> P₁V₁/T₁ = P₂V₂/T₂ (tanecik sayısı sabitken). 🔎 <b>Sen dene:</b> Hem sıcaklığı hem hacmi aynı anda değiştir; oranın hep sabit kaldığını gör. 💡 <b>Çıkarım:</b> Boyle, Charles ve Gay-Lussac; bu tek denklemde bir değişkeni sabit tuttuğumuz özel durumlardır."
 },
 {
-  mode:"box", locked:false, auto:true, sliders:["n"], T0:300, n0:20, nMin:10, nMax:70, vol0:0.4,
+  mode:"box3d", locked:false, auto:true, sliders:["n"], T0:300, n0:20, nMin:10, nMax:70, vol0:0.4,
   graph:{x:"n", y:"V", xVar:"n", yVar:"V", shape:"line", color:"#fbbf24"},
-  step:"8 / 14 · Avogadro Yasası",
-  title:"Aynı sıcaklık ve basınçta tanecik sayısı artarsa?",
-  say:"Kaydırıcıyla kutuya yeni tanecikler ekle. Piston yine serbest ve basıncı sabit tutmaya çalışıyor: daha çok tanecik daha çok çarpışma demek, sistem dengeyi hacmi büyüterek buluyor.",
-  note:"<b>Sonuç:</b> Eşit sıcaklık ve basınçta, eşit hacimdeki gazlar eşit sayıda tanecik içerir — gazın cinsi (H₂, O₂, CO₂...) fark etmez."
+  step:"6. Bölüm · Avogadro Yasası",
+  title:"Aynı Sıcaklık ve Basınçta Tanecik Sayısı Artarsa?",
+  say:"Kaydırıcıyla kaba yeni tanecikler ekle. Piston yine serbest ve dış basıncı sabit tutmaya çalışıyor: daha çok tanecik, daha çok çarpışma demek; sistem dengeyi hacmi büyüterek buluyor.",
+  note:"📖 <b>Avogadro Yasası:</b> Eşit sıcaklık ve basınçta, eşit hacimdeki gazlar eşit sayıda tanecik içerir. 💡 <b>Çıkarım:</b> Gazın CİNSİ (H₂, O₂, CO₂...) önemli değildir — yalnızca tanecik SAYISI önemlidir. 🌍 <b>Günlük hayat:</b> Aynı boydaki bir helyum balonuyla bir hava balonunun içindeki tanecik sayısı, aynı koşullarda birbirine çok yakındır."
 },
 {
-  mode:"slab", slab:"ideal",
-  step:"9 / 14 · ideal gaz denklemi",
-  title:"Dört değişkeni tek denklemde topla: PV = nRT",
-  say:"Basınç, hacim, mol sayısı ve sıcaklık — dördü de R sabiti üzerinden birbirine bağlanıyor. Şimdiye kadar gördüğün üç yasa bu denklemin özel durumları.",
-  note:"<b>Uyar:</b> T mutlaka Kelvin cinsinden olmalı — 0°C, T = 0 değildir. Sıfır Kelvin'de tanecik hareketi de (kuramsal olarak) durur."
+  mode:"slab", slab:"ideal", bg:{T0:300,n0:40,vol0:0.55},
+  step:"7. Bölüm · İdeal Gaz Denklemi",
+  title:"Dört Değişkeni Tek Denklemde Toplayalım: PV = nRT",
+  say:"Basınç, hacim, tanecik (mol) sayısı ve sıcaklık — dördü de R sabiti üzerinden birbirine bağlanıyor. Az önce gördüğün üç yasa, bu denklemin özel durumlarından başka bir şey değil.",
+  note:"⚠️ <b>Çok önemli:</b> T mutlaka KELVİN cinsinden olmalı — 0°C, T = 0 değildir! 0 K (−273°C), taneciklerin kuramsal olarak tamamen durduğu sıcaklıktır."
 },
 {
-  mode:"slab", slab:"real",
-  step:"10 / 14 · gerçek gazlar",
-  title:"Gerçek gazlar ideal modelden ne zaman sapar?",
-  say:"İdeal gaz modeli, tanecikleri hacimsiz nokta ve birbirine ilgisiz kabul eder. Yüksek basınç ve düşük sıcaklıkta bu iki varsayım çöker.",
-  note:"<b>Sor:</b> “Bir gaz hangi koşullarda ideale en çok benzer?” Cevap: düşük basınç, yüksek sıcaklık — tanecikler seyrek ve hızlı; boyutları ve aralarındaki çekim kuvvetleri ihmal edilebilir hâle gelir."
+  mode:"slab", slab:"real", bg:{T0:300,n0:40,vol0:0.55},
+  step:"8. Bölüm · Gerçek Gazlar",
+  title:"Gerçek Gazlar İdeal Modelden Ne Zaman Sapar?",
+  say:"İdeal gaz modeli, tanecikleri hacimsiz birer nokta ve birbirine tamamen ilgisiz kabul eder. Gerçekte her taneciğin küçük de olsa bir hacmi ve komşularını çekme eğilimi vardır. Yüksek basınç ve düşük sıcaklıkta bu iki varsayım çöker.",
+  note:"🔎 <b>Sor kendine:</b> Bir gaz hangi koşullarda ideale en çok benzer? 💡 <b>Cevap:</b> Düşük basınç, yüksek sıcaklık — tanecikler seyrek ve hızlı olduğunda boyutları ve aralarındaki çekim kuvveti ihmal edilebilir hâle gelir."
 },
 {
-  mode:"dalton", T0:320, nA:22, nB:22, vol0:0.62, speciesToggle:true,
-  step:"11 / 14 · Dalton Kısmi Basınçlar Yasası",
-  title:"Karışık bir kutuda iki farklı gaz olsa?",
-  say:"Turuncu ve mavi tanecikler aynı kutuda serbestçe dolaşıyor. Her biri kutuda yalnız kendisi varmış gibi davranıyor ve kendi “kısmi basıncını” oluşturuyor.",
-  note:"<b>Yasa:</b> P(toplam) = P(A) + P(B). Düğmelerle sadece turuncuyu, sadece maviyi ya da ikisini birden izle; toplam basıncın iki parçadan oluştuğunu gör."
+  mode:"dalton3d", T0:320, nA:22, nB:22, vol0:0.62, speciesToggle:true,
+  step:"9. Bölüm · Dalton Kısmi Basınçlar Yasası",
+  title:"Karışık Bir Kapta İki Farklı Gaz Olsa?",
+  say:"Turuncu ve mavi tanecikler aynı kapta serbestçe dolaşıyor. Her renk, kapta yalnız kendisi varmış gibi davranıp kendi “kısmi basıncını” oluşturuyor.",
+  note:"📖 <b>Dalton Yasası:</b> P(toplam) = P(A) + P(B). 🔎 <b>Sen dene:</b> Alttaki düğmelerle sadece turuncuyu, sadece maviyi ya da ikisini birden göster; toplam basıncın iki parçadan oluştuğunu gözlemle. 🌍 <b>Günlük hayat:</b> Soluduğumuz hava da azot, oksijen ve az miktarda başka gazın kısmi basınçlarının toplamıdır."
 },
 {
-  mode:"diffusion", resettable:true,
-  step:"12 / 14 · Difüzyon",
-  title:"Bölme kalkınca iki gaz nasıl karışır?",
-  say:"Tek bir kutu; ortasında bir bölme var. Solda turuncu gaz, sağda mavi gaz hapsolmuş durumda. “Bölmeyi kaldır” düğmesine bas ve ikisinin kendiliğinden nasıl karıştığını izle.",
-  note:"<b>Tanım:</b> Difüzyon, derişim farkı olan gazların kendiliğinden karışarak derişimin kabın her yerinde eşitlenmesi sürecidir. <b>Sor:</b> “Bölmeyi kaldırmasak, tanecikler yine de karışır mıydı?” (Hayır — difüzyon için ortak bir hacim gerekir.)"
+  mode:"diffusion3d", resettable:true,
+  step:"10. Bölüm · Difüzyon",
+  title:"Bölme Kalkınca İki Gaz Nasıl Karışır?",
+  say:"Tek bir kap; ortasında görünmez bir zar var. Solda turuncu gaz, sağda mavi gaz hapsolmuş durumda. “Bölmeyi kaldır” düğmesine bas ve ikisinin kendiliğinden nasıl karıştığını izle.",
+  note:"📖 <b>Tanım:</b> Difüzyon, derişim farkı olan gazların kendiliğinden karışarak derişimin kabın her yerinde eşitlenmesi sürecidir. 🔎 <b>Sor kendine:</b> Bölmeyi kaldırmasaydık yine de karışırlar mıydı? (Hayır — difüzyon için ortak bir hacim gerekir.) 🌍 <b>Günlük hayat:</b> Mutfakta pişen yemeğin kokusunun tüm eve yayılması bir difüzyon örneğidir."
 },
 {
-  mode:"effusion", resettable:true,
-  step:"13 / 14 · Graham Efüzyon Yasası",
-  title:"Hafif gaz mı hızlı yayılır, ağır gaz mı?",
-  say:"Bu kez her gaz kendi kapalı kabında: geniş bir oda ve küçük bir delikle bağlı dar bir “karşı oda”. Soldaki hafif tanecikler (H₂ gibi) ile sağdaki ağır tanecikler (O₂ gibi) aynı sıcaklıkta bırakılıyor. Karşı odaya hangisi daha çok geçer?",
-  note:"<b>Yasa:</b> Efüzyon hızı, mol kütlesinin kareköküyle ters orantılıdır. Aynı sıcaklıkta (aynı kinetik enerjide) hafif tanecik daha hızlı hareket eder ve delikten daha çok geçer. Alt çubuklar, karşı odaya geçen oranı gösterir."
+  mode:"effusion3d", resettable:true,
+  step:"11. Bölüm · Graham Efüzyon Yasası",
+  title:"Hafif Gaz mı Hızlı Yayılır, Ağır Gaz mı?",
+  say:"Her gaz kendi kabında: geniş bir “kaynak oda” ve küçük bir delikle bağlı dar bir “karşı oda”. Soldaki hafif tanecikler (H₂ gibi) ile sağdaki ağır tanecikler (O₂ gibi) aynı sıcaklıkta bırakılıyor.",
+  note:"📖 <b>Graham Yasası:</b> Efüzyon hızı, mol kütlesinin kareköküyle TERS orantılıdır. 💡 <b>Çıkarım:</b> Aynı sıcaklıkta hafif tanecik daha hızlı hareket eder ve delikten daha çok geçer. 🌍 <b>Günlük hayat:</b> Sızdıran bir helyum balonunun günler içinde sönmesi, helyumun küçük ve hafif olup delikçiklerden hızla kaçmasındandır."
 },
 {
-  mode:"slab", slab:"end",
-  step:"14 / 14 · toparlama",
-  title:"Aklında kalacak beş cümle.",
+  mode:"slab", slab:"end", bg:{T0:300,n0:40,vol0:0.55},
+  step:"Kapanış",
+  title:"Aklında Kalacak Beş Cümle",
   say:"",
-  note:"<b>Kapanış sorusu:</b> “Dalış tüpünü sıcak bir arabada bırakırsak hangi yasa devreye girer?” (Gay-Lussac — hacim sabit, sıcaklık artınca basınç artar.)"
+  note:"🎯 <b>Kapanış sorusu:</b> Dalış tüpünü sıcak bir arabada bırakırsak hangi yasa devreye girer? (Gay-Lussac — hacim sabit, sıcaklık artınca basınç artar.) 🧠 <b>Kendini sına:</b> Bu beş cümleyi kendi cümlelerinle bir arkadaşına anlatabilir misin? Anlatabiliyorsan, öğrenmişsin demektir."
 }
 ];
 
-var COMBINED_HTML =
- '<table>' +
+var IDEAL_HTML =
+ '<h2>PV = nRT</h2><table>' +
+ '<tr><td>P</td><td>→</td><td>basınç (atm, kPa)</td></tr>' +
+ '<tr><td>V</td><td>→</td><td>hacim (L)</td></tr>' +
+ '<tr><td>n</td><td>→</td><td>mol (tanecik) sayısı</td></tr>' +
+ '<tr><td>R</td><td>→</td><td>gaz sabiti (0,082 L·atm/mol·K)</td></tr>' +
+ '<tr><td>T</td><td>→</td><td>mutlak sıcaklık (K)</td></tr>' +
  '<tr><td>Boyle (T sabit)</td><td>→</td><td>P₁V₁ = P₂V₂</td></tr>' +
  '<tr><td>Charles (P sabit)</td><td>→</td><td>V₁/T₁ = V₂/T₂</td></tr>' +
  '<tr><td>Gay-Lussac (V sabit)</td><td>→</td><td>P₁/T₁ = P₂/T₂</td></tr>' +
- '<tr><td>Genel hâl (n sabit)</td><td>→</td><td>P₁V₁/T₁ = P₂V₂/T₂</td></tr>' +
- '</table>';
-
-var IDEAL_HTML =
- '<table>' +
- '<tr><td>P</td><td>→</td><td>basınç (atm, kPa)</td></tr>' +
- '<tr><td>V</td><td>→</td><td>hacim (L)</td></tr>' +
- '<tr><td>n</td><td>→</td><td>mol sayısı</td></tr>' +
- '<tr><td>R</td><td>→</td><td>gaz sabiti (0,082 L·atm/mol·K)</td></tr>' +
- '<tr><td>T</td><td>→</td><td>mutlak sıcaklık (K)</td></tr>' +
- '<tr><td>Denklem</td><td>→</td><td>PV = nRT</td></tr>' +
  '</table>';
 
 var REAL_HTML =
- '<table>' +
+ '<h2>İdeal mi, Gerçek mi?</h2><table>' +
  '<tr><td>İdeal varsayım: hacimsiz nokta tanecik</td><td>→</td><td>Gerçekte taneciğin bir hacmi var</td></tr>' +
- '<tr><td>İdeal varsayım: tanecikler birbirine ilgisiz</td><td>→</td><td>Zayıf çekim kuvvetleri var (van der Waals)</td></tr>' +
+ '<tr><td>İdeal varsayım: tanecikler birbirine ilgisiz</td><td>→</td><td>Zayıf çekim kuvvetleri var</td></tr>' +
  '<tr><td>İdeal varsayım: çarpışmalar tam esnek</td><td>→</td><td>Yüksek basınçta bu zorlanır</td></tr>' +
- '<tr><td>İdeal davranış en gerçekçi olduğu yer</td><td>→</td><td>Düşük P, yüksek T</td></tr>' +
+ '<tr><td>İdeal davranış en gerçekçi olduğu yer</td><td>→</td><td>Düşük basınç, yüksek sıcaklık</td></tr>' +
  '</table>';
 
 var END_HTML =
- '<ul class="big">' +
+ '<h2>Özet</h2><ul class="big">' +
  '<li><b>Basınç,</b> taneciklerin duvara çarpma sıklığı ve şiddetidir.</li>' +
- '<li><b>Sıcaklık,</b> ortalama kinetik enerjinin ölçüsüdür — hacmi değil, hızı değiştirir.</li>' +
- '<li><b>Boyle, Charles, Gay-Lussac;</b> PV = nRT’nin bir değişkeni sabit tuttuğun özel hâlleridir.</li>' +
- '<li><b>Eşit T ve P’de eşit hacim,</b> eşit tanecik sayısı demektir (Avogadro).</li>' +
+ '<li><b>Sıcaklık,</b> taneciklerin ortalama hareket enerjisinin ölçüsüdür — hacmi değil, hızı değiştirir.</li>' +
+ '<li><b>Boyle, Charles, Gay-Lussac;</b> PV = nRT denkleminin bir değişkeni sabit tuttuğumuz özel hâlleridir.</li>' +
+ '<li><b>Eşit sıcaklık ve basınçta eşit hacim,</b> eşit tanecik sayısı demektir (Avogadro).</li>' +
  '<li><b>Gerçek gazlar,</b> düşük basınç ve yüksek sıcaklıkta ideale en çok yaklaşır.</li>' +
  '</ul>';
 
-/* ============================ FİZİK MOTORU ============================ */
-var BASE_SPEED = 1.55;
-var K_P = 50/(44*300);      /* referans: n=44, T=300K, V=1 iken P≈50 (bağıl birim) */
-var VOL_MIN_FRAC = 0.16;    /* pistonun sıkışabileceği en küçük hacim oranı */
-function rnd(a,b){ return a+Math.random()*(b-a); }
-function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+/* ============================================================
+   FİZİK MOTORU — 3 BOYUTLU
+   Silindirik bir kap (piston ekseni x); y-z düzleminde dairesel
+   kesit. Tanecikler gerçek 3B konum/hız taşır; küresel çarpışma
+   ve dairesel duvar sekmesiyle sekiyorlar.
+   ============================================================ */
+var BASE_SPEED = 0.052;
+var K_P = 50/(44*300);
+var VOL_MIN_FRAC = 0.16;
 function speedFromT(T){ return BASE_SPEED*Math.sqrt(T/300); }
 
-function spawnParticle(box, speed, mass, color, tag, r){
-  r = r || 3.4;
-  var x = rnd(box.x+r, box.x+box.w-r), y = rnd(box.y+r, box.y+box.h-r);
-  var ang = rnd(0, Math.PI*2);
-  return {x:x, y:y, vx:Math.cos(ang)*speed, vy:Math.sin(ang)*speed, r:r, m:mass, color:color, tag:tag};
+function spawn3D(L, R, speed, mass, color, tag, r){
+  r = r || 0.052;
+  var rad = Math.sqrt(Math.random())*Math.max(R-r,0.01);
+  var ang = Math.random()*Math.PI*2;
+  var x = rnd(r, Math.max(L-r,r+0.001));
+  var y = rad*Math.cos(ang), z = rad*Math.sin(ang);
+  var th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1);
+  var vx=Math.sin(ph)*Math.cos(th)*speed, vy=Math.sin(ph)*Math.sin(th)*speed, vz=Math.cos(ph)*speed;
+  return {x:x,y:y,z:z,vx:vx,vy:vy,vz:vz,r:r,m:mass,color:color,tag:tag};
 }
-
-function collidePair(a,b){
-  var dx=b.x-a.x, dy=b.y-a.y, dist=Math.sqrt(dx*dx+dy*dy);
+function collide3D(a,b){
+  var dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z, dist=Math.sqrt(dx*dx+dy*dy+dz*dz);
   var minD=a.r+b.r;
   if (dist>0 && dist<minD){
-    var overlap=(minD-dist)/2, nx=dx/dist, ny=dy/dist;
-    a.x-=nx*overlap; a.y-=ny*overlap; b.x+=nx*overlap; b.y+=ny*overlap;
-    var dvx=b.vx-a.vx, dvy=b.vy-a.vy;
-    var vn=dvx*nx+dvy*ny;
+    var overlap=(minD-dist)/2, nx=dx/dist, ny=dy/dist, nz=dz/dist;
+    a.x-=nx*overlap; a.y-=ny*overlap; a.z-=nz*overlap;
+    b.x+=nx*overlap; b.y+=ny*overlap; b.z+=nz*overlap;
+    var dvx=b.vx-a.vx, dvy=b.vy-a.vy, dvz=b.vz-a.vz;
+    var vn=dvx*nx+dvy*ny+dvz*nz;
     if (vn<0){
       var imp=(2*vn)/(a.m+b.m);
-      a.vx+=imp*b.m*nx; a.vy+=imp*b.m*ny;
-      b.vx-=imp*a.m*nx; b.vy-=imp*a.m*ny;
+      a.vx+=imp*b.m*nx; a.vy+=imp*b.m*ny; a.vz+=imp*b.m*nz;
+      b.vx-=imp*a.m*nx; b.vy-=imp*a.m*ny; b.vz-=imp*a.m*nz;
     }
   }
 }
-
-/* generic tek-kutu fizik adımı: taneciklerin görsel hareketi + duvar/çarpışma fiziği.
-   Basınç artık burada ölçülmüyor (gürültülü olduğu için); kinetik teori formülüyle hesaplanıyor. */
-function stepBox(particles, box){
+/* xMin..xMax: taneciğin ekseninde serbest olduğu aralık (bölmeli sahnelerde iç duvarlar da olabilir) */
+function step3D(particles, xMin, xMax, R, walls){
   for (var i=0;i<particles.length;i++){
     var p=particles[i];
-    p.x+=p.vx; p.y+=p.vy;
-    if (p.x-p.r<box.x){ p.x=box.x+p.r; if(p.vx<0) p.vx=-p.vx; }
-    if (p.x+p.r>box.x+box.w){ p.x=box.x+box.w-p.r; if(p.vx>0) p.vx=-p.vx; }
-    if (p.y-p.r<box.y){ p.y=box.y+p.r; if(p.vy<0) p.vy=-p.vy; }
-    if (p.y+p.r>box.y+box.h){ p.y=box.y+box.h-p.r; if(p.vy>0) p.vy=-p.vy; }
+    p.x+=p.vx; p.y+=p.vy; p.z+=p.vz;
+    if (p.x-p.r<xMin){ p.x=xMin+p.r; if(p.vx<0) p.vx=-p.vx; }
+    if (p.x+p.r>xMax){ p.x=xMax-p.r; if(p.vx>0) p.vx=-p.vx; }
+    var d=Math.sqrt(p.y*p.y+p.z*p.z), maxd=R-p.r;
+    if (d>maxd && d>0){
+      var nx=p.y/d, nz=p.z/d;
+      p.y=nx*maxd; p.z=nz*maxd;
+      var vn=p.vy*nx+p.vz*nz;
+      if (vn>0){ p.vy-=2*vn*nx; p.vz-=2*vn*nz; }
+    }
+    if (walls){
+      for (var w=0; w<walls.length; w++){
+        var wl=walls[w];
+        if (!wl.open && Math.abs(p.x-wl.x)<p.r){
+          var through = wl.hole && (p.y*p.y+p.z*p.z) < wl.hole*wl.hole;
+          if (!through){
+            if (p.x<wl.x){ p.x=wl.x-p.r; if(p.vx>0) p.vx=-p.vx; }
+            else { p.x=wl.x+p.r; if(p.vx<0) p.vx=-p.vx; }
+          }
+        }
+      }
+    }
   }
-  for (i=0;i<particles.length;i++) for (var j=i+1;j<particles.length;j++) collidePair(particles[i],particles[j]);
+  for (i=0;i<particles.length;i++) for (var j=i+1;j<particles.length;j++) collide3D(particles[i],particles[j]);
 }
 
-/* ============================ SAHNE DÜNYALARI ============================ */
+/* ============================================================
+   3B PROJEKSİYON (kabine/oblique izdüşüm) — WebGL olmadan,
+   gerçek derinlik hissi veren sağlam ve hızlı bir teknik.
+   ============================================================ */
+var OB_A = 30*DEG, OB_COS=Math.cos(OB_A), OB_SIN=Math.sin(OB_A), OB_K=0.5;
+function mkProjector(cx,cy,scale){
+  return function(x,y,z){
+    return [ cx + x*scale + z*OB_COS*OB_K*scale, cy + y*scale - z*OB_SIN*OB_K*scale ];
+  };
+}
+function ellipsePts(proj, xPos, R, n){
+  var pts=[];
+  for (var i=0;i<n;i++){
+    var t=i/n*Math.PI*2;
+    pts.push(proj(xPos, R*Math.cos(t), R*Math.sin(t)));
+  }
+  return pts;
+}
+function extentOf(pts){
+  var top=0,bot=0,minx=0,maxx=0;
+  for (var i=1;i<pts.length;i++){
+    if (pts[i][1]<pts[top][1]) top=i;
+    if (pts[i][1]>pts[bot][1]) bot=i;
+    if (pts[i][0]<pts[minx][0]) minx=i;
+    if (pts[i][0]>pts[maxx][0]) maxx=i;
+  }
+  return {top:top,bot:bot,minx:minx,maxx:maxx};
+}
+
+/* ============================================================
+   SPRITE ÖNBELLEĞİ — küresel, ışıklı tanecik ikonları
+   ============================================================ */
+var SPRITES={};
+function getSprite(color){
+  if (SPRITES[color]) return SPRITES[color];
+  var s=72, c=document.createElement("canvas"); c.width=s; c.height=s;
+  var g=c.getContext("2d");
+  var grad=g.createRadialGradient(s*0.33,s*0.30,s*0.03, s*0.5,s*0.5,s*0.5);
+  grad.addColorStop(0,"#ffffff");
+  grad.addColorStop(0.20,lighten(color,0.45));
+  grad.addColorStop(0.55,color);
+  grad.addColorStop(1,darken(color,0.5));
+  g.fillStyle=grad;
+  g.beginPath(); g.arc(s/2,s/2,s*0.44,0,Math.PI*2); g.fill();
+  SPRITES[color]=c;
+  return c;
+}
+function drawParticles3D(proj, list, R){
+  var arr = list.slice().sort(function(a,b){ return b.z-a.z; });
+  for (var i=0;i<arr.length;i++){
+    var p=arr[i];
+    var sc = proj(p.x,p.y,p.z);
+    var depth = clamp((p.z/R+1)/2, 0, 1);
+    var pxr = Math.max(2.2, p.r*proj.scale*(0.78+depth*0.5));
+    var alpha = 0.72+depth*0.28;
+    ctx.globalAlpha=alpha;
+    var spr=getSprite(p.color);
+    ctx.drawImage(spr, sc[0]-pxr, sc[1]-pxr, pxr*2, pxr*2);
+    ctx.globalAlpha=1;
+  }
+}
+
+/* ============================================================
+   GÖSTERGELER: analog basınç saati ve termometre
+   ============================================================ */
+function drawGauge(cx,cy,R,value,vmin,vmax,label,unitLabel){
+  var grad=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.1,cx,cy,R);
+  grad.addColorStop(0,"#3a4658"); grad.addColorStop(1,"#131926");
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=grad; ctx.fill();
+  ctx.lineWidth=2.4; ctx.strokeStyle="#05070c"; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,R*0.84,0,Math.PI*2); ctx.fillStyle="#0b1220"; ctx.fill();
+  ctx.strokeStyle="#1f2937"; ctx.lineWidth=1; ctx.stroke();
+
+  var a0=140*DEG, a1=400*DEG, steps=10;
+  for (var i=0;i<=steps;i++){
+    var a=a0+(a1-a0)*(i/steps);
+    var r1=R*0.84, r2=(i%5===0)?R*0.66:R*0.73;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*r1, cy+Math.sin(a)*r1);
+    ctx.lineTo(cx+Math.cos(a)*r2, cy+Math.sin(a)*r2);
+    ctx.strokeStyle=(i%5===0)?"#fbbf24":"#475569"; ctx.lineWidth=(i%5===0)?2:1;
+    ctx.stroke();
+  }
+  var t=clamp((value-vmin)/(vmax-vmin),0,1);
+  var na=a0+(a1-a0)*t;
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(na);
+  ctx.beginPath(); ctx.moveTo(-R*0.14,-R*0.035); ctx.lineTo(R*0.64,0); ctx.lineTo(-R*0.14,R*0.035); ctx.closePath();
+  ctx.fillStyle="#fb7185"; ctx.fill();
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx,cy,R*0.1,0,Math.PI*2); ctx.fillStyle="#e2e8f0"; ctx.fill();
+
+  ctx.fillStyle="#cbd5e1"; ctx.font="700 "+Math.max(9,R*0.24)+"px system-ui"; ctx.textAlign="center";
+  ctx.fillText(Math.round(value)+(unitLabel||""), cx, cy+R*0.42);
+  ctx.fillStyle="#64748b"; ctx.font="600 "+Math.max(8,R*0.19)+"px system-ui";
+  ctx.fillText(label, cx, cy+R*1.32);
+}
+function drawThermo(cx,cy,h,value,vmin,vmax){
+  var w=h*0.24, bulbR=w*0.95;
+  var t=clamp((value-vmin)/(vmax-vmin),0,1);
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(cx-w/2, cy-h, w, h-bulbR*0.4, w/2); else ctx.rect(cx-w/2,cy-h,w,h-bulbR*0.4);
+  ctx.fillStyle="rgba(226,232,240,.14)"; ctx.fill();
+  ctx.strokeStyle="rgba(226,232,240,.4)"; ctx.lineWidth=1.3; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,bulbR,0,Math.PI*2); ctx.fillStyle="#0b1220"; ctx.fill();
+  ctx.strokeStyle="rgba(226,232,240,.4)"; ctx.stroke();
+
+  var top=cy-bulbR-((h-bulbR*0.4)-2)*t;
+  ctx.beginPath();
+  var rr=w*0.3;
+  if (ctx.roundRect) ctx.roundRect(cx-rr, top, rr*2, (cy-bulbR)-top+bulbR+2, rr);
+  else ctx.rect(cx-rr, top, rr*2, (cy-bulbR)-top+bulbR+2);
+  ctx.fillStyle="#fb7185"; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,bulbR*0.7,0,Math.PI*2); ctx.fillStyle="#fb7185"; ctx.fill();
+  ctx.fillStyle="#64748b"; ctx.font="600 "+Math.max(8,w*0.7)+"px system-ui"; ctx.textAlign="center";
+  ctx.fillText("T", cx, cy+bulbR*2.0);
+}
+
+/* ============================================================
+   3B SİLİNDİR ÇİZİMİ (gerçek pistonlu kap görünümü)
+   ============================================================ */
+function drawGround(cx,cy,scale,L,R){
+  ctx.save();
+  var gy=cy+R*scale*1.28;
+  ctx.filter="blur(9px)";
+  ctx.beginPath();
+  ctx.ellipse(cx+L*scale*0.5, gy, L*scale*0.62, R*scale*0.34, 0, 0, Math.PI*2);
+  ctx.fillStyle="rgba(0,0,0,.45)"; ctx.fill();
+  ctx.restore();
+}
+function drawCapDisc(pts, stops, opts){
+  opts=opts||{};
+  ctx.beginPath();
+  pts.forEach(function(p,i){ i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); });
+  ctx.closePath();
+  var e=extentOf(pts);
+  var grad=ctx.createLinearGradient(pts[e.minx][0],0,pts[e.maxx][0],0);
+  stops.forEach(function(s){ grad.addColorStop(s[0],s[1]); });
+  ctx.fillStyle=grad; ctx.fill();
+  ctx.lineWidth=opts.lw||1.6; ctx.strokeStyle=opts.stroke||"rgba(5,7,12,.75)"; ctx.stroke();
+  return e;
+}
+function drawTubeBody(leftPts,rightPts){
+  var eL=extentOf(leftPts), eR=extentOf(rightPts);
+  var x0=leftPts[eL.top][0], x1=rightPts[eR.top][0];
+  var y0=leftPts[eL.top][1], y1=leftPts[eL.bot][1];
+  if (x1<x0){ var tmp=x0; x0=x1; x1=tmp; }
+  var grad=ctx.createLinearGradient(0,y0,0,y1);
+  grad.addColorStop(0,"rgba(180,220,255,.24)");
+  grad.addColorStop(0.14,"rgba(180,220,255,.07)");
+  grad.addColorStop(0.5,"rgba(120,160,200,.045)");
+  grad.addColorStop(0.86,"rgba(180,220,255,.07)");
+  grad.addColorStop(1,"rgba(180,220,255,.24)");
+  ctx.fillStyle=grad;
+  ctx.fillRect(x0,y0,x1-x0,y1-y0);
+  ctx.strokeStyle="rgba(148,197,255,.32)"; ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x1,y1); ctx.stroke();
+  return {x0:x0,x1:x1,y0:y0,y1:y1};
+}
+function hatch(pts, dir){
+  var e=extentOf(pts);
+  ctx.save();
+  ctx.beginPath();
+  pts.forEach(function(p,i){ i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); });
+  ctx.closePath(); ctx.clip();
+  ctx.strokeStyle="rgba(10,10,5,.28)"; ctx.lineWidth=1.4;
+  var x0=pts[e.minx][0], x1=pts[e.maxx][0], y0=pts[e.top][1], y1=pts[e.bot][1];
+  for (var x=x0-((y1-y0)); x<x1+((y1-y0)); x+=6){
+    ctx.beginPath(); ctx.moveTo(x,y0-4); ctx.lineTo(x+dir*(y1-y0),y1+4); ctx.stroke();
+  }
+  ctx.restore();
+}
+function boltRing(pts,color){
+  var e=extentOf(pts);
+  var cx=(pts[e.minx][0]+pts[e.maxx][0])/2, cy=(pts[e.top][1]+pts[e.bot][1])/2;
+  var rx=(pts[e.maxx][0]-pts[e.minx][0])/2*0.72, ry=(pts[e.bot][1]-pts[e.top][1])/2*0.72;
+  for (var i=0;i<6;i++){
+    var a=i/6*Math.PI*2;
+    var bx=cx+Math.cos(a)*rx, by=cy+Math.sin(a)*ry;
+    ctx.beginPath(); ctx.arc(bx,by,Math.max(1.6,rx*0.07),0,Math.PI*2);
+    ctx.fillStyle="#1e2634"; ctx.fill(); ctx.strokeStyle="#000"; ctx.lineWidth=0.6; ctx.stroke();
+  }
+}
+/* Genel amaçlı silindir çizer: cx,cy,scale,L,R dünya birimleri.
+   rightMode: "piston" | "locked" | "wall"(hem sol hem sağ sabit — iki odalı sahnelerde ara duvar)
+   showInstruments: gauge+termometre çizilsin mi (sol sabit uca monte) */
+function drawCylinder(cx, cy, scale, L, R, rightMode, showInstruments, Pval, Pmax, Tval, Tmax){
+  var proj = mkProjector(cx,cy,scale); proj.scale=scale;
+  var N=56;
+  var leftPts = ellipsePts(proj, 0, R, N);
+  var rightPts = ellipsePts(proj, L, R, N);
+
+  drawGround(cx,cy,scale,L,R);
+  drawTubeBody(leftPts, rightPts);
+
+  var eL = drawCapDisc(leftPts, [[0,"#293449"],[0.5,"#7c8aa0"],[1,"#1c2432"]]);
+  hatch(leftPts, 1);
+  boltRing(leftPts);
+
+  if (rightMode==="piston"){
+    var eR = drawCapDisc(rightPts, [[0,"#8a6d1f"],[0.45,"#f2c14e"],[0.55,"#f2c14e"],[1,"#6e5518"]]);
+    hatch(rightPts, -1);
+    var rodLen = R*scale*0.9;
+    var rTop=rightPts[eR.top], rMid=[(rightPts[eR.minx][0]+rightPts[eR.maxx][0])/2, (rightPts[eR.top][1]+rightPts[eR.bot][1])/2];
+    ctx.strokeStyle="#94a3b8"; ctx.lineWidth=Math.max(3,R*scale*0.11); ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(rMid[0],rMid[1]); ctx.lineTo(rMid[0]+rodLen,rMid[1]); ctx.stroke();
+    ctx.fillStyle="#cbd5e1";
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(rMid[0]+rodLen-2, rMid[1]-R*scale*0.32, R*scale*0.16, R*scale*0.64, 3) : ctx.rect(rMid[0]+rodLen-2, rMid[1]-R*scale*0.32, R*scale*0.16, R*scale*0.64);
+    ctx.fill();
+    ctx.fillStyle="#fbbf24"; ctx.font="700 "+Math.max(10,R*scale*0.22)+"px system-ui"; ctx.textAlign="center";
+    ctx.fillText("piston", rMid[0]+rodLen*0.5, rMid[1]-R*scale*1.15);
+  } else {
+    var eR2 = drawCapDisc(rightPts, [[0,"#293449"],[0.5,"#7c8aa0"],[1,"#1c2432"]]);
+    hatch(rightPts, -1);
+    boltRing(rightPts);
+    if (rightMode==="locked"){
+      var rc=[(rightPts[eR2.minx][0]+rightPts[eR2.maxx][0])/2, (rightPts[eR2.top][1]+rightPts[eR2.bot][1])/2];
+      ctx.fillStyle="#0b1220"; ctx.strokeStyle="#fbbf24"; ctx.lineWidth=1.6;
+      var lr=Math.max(7,R*scale*0.16);
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(rc[0]-lr*0.7, rc[1]-lr*0.15, lr*1.4, lr*1.05, 2) : ctx.rect(rc[0]-lr*0.7,rc[1]-lr*0.15,lr*1.4,lr*1.05);
+      ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(rc[0],rc[1]-lr*0.15,lr*0.55,Math.PI,0); ctx.strokeStyle="#fbbf24"; ctx.lineWidth=1.6; ctx.stroke();
+      ctx.fillStyle="#fbbf24"; ctx.font="700 "+Math.max(9,R*scale*0.19)+"px system-ui"; ctx.textAlign="center";
+      ctx.fillText("sabit hacim", rc[0], rc[1]+R*scale*1.05);
+    }
+  }
+
+  if (showInstruments){
+    var stubX = leftPts[eL.top][0]+ (rightPts[0][0]>leftPts[0][0]?1:-1)*R*scale*0.55;
+    var stubTopY = leftPts[eL.top][1];
+    var gaugeR = R*scale*0.62;
+    var gaugeCy = stubTopY - R*scale*1.05;
+    ctx.strokeStyle="#475569"; ctx.lineWidth=Math.max(2,R*scale*0.06);
+    ctx.beginPath(); ctx.moveTo(stubX, stubTopY); ctx.lineTo(stubX, gaugeCy+gaugeR*0.85); ctx.stroke();
+    drawGauge(stubX, gaugeCy, gaugeR, Pval, 0, Pmax, "BASINÇ", "");
+
+    var thermoX = leftPts[eL.top][0]+ (rightPts[0][0]>leftPts[0][0]?1:-1)*R*scale*0.05;
+    var thermoBottomY = leftPts[eL.bot][1];
+    var thStub = R*scale*0.22, thH = R*scale*0.82;
+    ctx.strokeStyle="#475569"; ctx.lineWidth=Math.max(2,R*scale*0.05);
+    ctx.beginPath(); ctx.moveTo(thermoX, thermoBottomY); ctx.lineTo(thermoX, thermoBottomY + thStub); ctx.stroke();
+    drawThermo(thermoX, thermoBottomY + thStub + thH, thH, Tval, 150, Tmax, "");
+  }
+  return {leftPts:leftPts, rightPts:rightPts, proj:proj};
+}
+
+/* ============================================================
+   SAHNE DÜNYALARI (state)
+   ============================================================ */
 var W=null;
+var WORLD_R = 1.0;
+var WORLD_LMAX = 5.6;
 
-function buildBox(sc){
+function buildBox3D(sc){
   return {
-    kind:"box", locked:!!sc.locked, auto:!!sc.auto,
+    kind:"box3d", locked:!!sc.locked, auto:!!sc.auto, combined:!!sc.combined,
     T: sc.T0||300, n: sc.n0||40, volFrac: sc.vol0!=null?sc.vol0:0.55,
-    particles:[], history:[], targetP:null, gx:null, frame:0, inited:false
+    particles:[], history:[], targetP:null, gx:null, frame:0, inited:false, baseline:null
   };
 }
-function buildDalton(sc){
-  return {
-    kind:"dalton", T: sc.T0||320, nA: sc.nA||22, nB: sc.nB||22, vol0: sc.vol0!=null?sc.vol0:0.62,
-    filter:"both", particles:[], frame:0, inited:false
-  };
+function buildDalton3D(sc){
+  return { kind:"dalton3d", T: sc.T0||320, nA: sc.nA||22, nB: sc.nB||22, vol0: sc.vol0!=null?sc.vol0:0.62,
+    filter:"both", particles:[], frame:0, inited:false };
 }
-function buildDiffusion(sc){
-  return { kind:"diffusion", particles:[], barrier:true, frame:0, inited:false };
-}
-function buildEffusion(sc){
-  return { kind:"effusion", pl:[], ph:[], frame:0, inited:false };
+function buildDiffusion3D(sc){ return { kind:"diffusion3d", particles:[], barrier:true, frame:0, inited:false }; }
+function buildEffusion3D(sc){ return { kind:"effusion3d", pl:[], ph:[], frame:0, inited:false }; }
+
+function currentLen(volFrac, locked){
+  var Lmin=WORLD_LMAX*VOL_MIN_FRAC;
+  return locked ? WORLD_LMAX*volFrac : Lmin+(WORLD_LMAX-Lmin)*clamp(volFrac,0,1);
 }
 
 function initScene(){
   var sc=SCENES[idx];
-  if (sc.mode==="box") W=buildBox(sc);
-  else if (sc.mode==="dalton") W=buildDalton(sc);
-  else if (sc.mode==="diffusion") W=buildDiffusion(sc);
-  else if (sc.mode==="effusion") W=buildEffusion(sc);
+  if (sc.mode==="box3d") W=buildBox3D(sc);
+  else if (sc.mode==="dalton3d") W=buildDalton3D(sc);
+  else if (sc.mode==="diffusion3d") W=buildDiffusion3D(sc);
+  else if (sc.mode==="effusion3d") W=buildEffusion3D(sc);
+  else if (sc.mode==="slab"){
+    var bg=sc.bg||{T0:300,n0:40,vol0:0.55};
+    W=buildBox3D({locked:true, T0:bg.T0, n0:bg.n0, vol0:bg.vol0});
+  }
   else W=null;
 }
 
@@ -310,30 +648,23 @@ function setTemperature(w, newT){
   if (!w.inited){ w.T=newT; return; }
   var oldSpeed=speedFromT(w.T), newSpeed=speedFromT(newT);
   var ratio=newSpeed/oldSpeed;
-  for (var i=0;i<w.particles.length;i++){ w.particles[i].vx*=ratio; w.particles[i].vy*=ratio; }
+  for (var i=0;i<w.particles.length;i++){ w.particles[i].vx*=ratio; w.particles[i].vy*=ratio; w.particles[i].vz*=ratio; }
   w.T=newT;
 }
-function setParticleCount(w, newN, box, color){
+function setParticleCount(w, newN, L, R, color){
   if (!w.inited){ w.n=newN; return; }
   var diff=newN-w.n;
   if (diff>0){
-    for (var k=0;k<diff;k++) w.particles.push(spawnParticle(box, speedFromT(w.T), 1, color, "g"));
+    for (var k=0;k<diff;k++) w.particles.push(spawn3D(L, R, speedFromT(w.T), 1, color, "g"));
   } else if (diff<0){
     for (k=0;k<-diff && w.particles.length>4;k++) w.particles.splice(Math.floor(Math.random()*w.particles.length),1);
   }
   w.n=newN;
 }
 
-/* ============================ ÇİZİM: BOX ============================ */
-function computeBox(w, sw, sh){
-  var maxW=sw*0.86, minW=maxW*VOL_MIN_FRAC;
-  var bw = w.locked ? maxW*w.volFrac : minW+(maxW-minW)*clamp(w.volFrac,0,1);
-  var bh = sh*0.46, bx = sw*0.07, by = sh*0.32;
-  return { x:bx, y:by, w:bw, h:bh, maxW:maxW };
-}
-
-/* Grafiğin x eksenine göre y'yi TAM olarak kinetik teori formülünden hesaplar:
-   P = K_P·n·T / V  →  V eksende ise P=k/V (hiperbol), T ya da n eksende ise doğrusal. */
+/* ============================================================
+   GRAFİK (P-V, V-T, P-T ilişkileri) — 2B veri paneli
+   ============================================================ */
 function graphCurveY(sc, W, xv){
   var g=sc.graph;
   if (g.x==="V" && g.y==="P") return K_P*W.n*W.T/xv;
@@ -342,8 +673,6 @@ function graphCurveY(sc, W, xv){
   if (g.x==="n" && g.y==="V") return K_P*W.T*xv/W.targetP;
   return 0;
 }
-/* Grafik ekseninin aralığını, kaydırıcının gerçek min/maks değerlerinden SABİT olarak belirler
-   (ölçüme göre kayan bir eksen, eğri ile noktaların uyumsuz görünmesine yol açıyordu). */
 function computeGraphDomain(sc, W){
   var g=sc.graph, xmin, xmax;
   if (g.x==="V"){ var vfMin=SLIDER_META.V.min/100; xmin=VOL_MIN_FRAC+(1-VOL_MIN_FRAC)*vfMin; xmax=1.0; }
@@ -352,13 +681,10 @@ function computeGraphDomain(sc, W){
   var y1=graphCurveY(sc,W,xmin), y2=graphCurveY(sc,W,xmax);
   return { xmin:xmin, xmax:xmax, ymin:0, ymax:Math.max(y1,y2)*1.1 };
 }
-
-/* Ders kitabındaki gibi: eksenli, ok uçlu, TEK bir düzgün eğri (hiperbol ya da orijinden geçen doğru).
-   Eğri her zaman anlık n/T/hedef-basınç değerlerinden birebir hesaplanır; bu yüzden ölçüm noktaları
-   (soluk noktalar) ve güncel değer (parlak nokta) her zaman eğrinin TAM üzerine düşer. */
 function drawGraph(W, sc, sw, sh){
-  var gx=sw-206, gy=14, gw=192, gh=134;
-  var padL=28, padB=20, padT=16, padR=12;
+  var gw=clamp(sw*0.30, 128, 192), gh=gw*0.70;
+  var gx=sw-gw-12, gy=12;
+  var padL=26, padB=18, padT=14, padR=10;
   var ox=gx+padL, oy=gy+gh-padB;
   var exX=gx+gw-padR, eyY=gy+padT;
 
@@ -404,45 +730,79 @@ function drawGraph(W, sc, sw, sh){
   }
 }
 
-function drawBoxScene(sc){
+var hudEl = document.getElementById("hud");
+var hudLast = "";
+function hudPanel(sw, sh, lines){
+  var html = lines.map(function(l){ return l.replace(/</g,"&lt;"); }).join("<br>");
+  if (html!==hudLast){ hudEl.innerHTML=html; hudLast=html; }
+  hudEl.className = "hud";
+}
+
+/* ============================================================
+   SAHNE ÇİZİMLERİ
+   ============================================================ */
+var GAUGE_UP_R = 1.75;   /* gösterge kolu+kadranın taban çizgisinin üstüne çıkan yükseklik (R birimi) */
+var THERMO_DOWN_R = 1.35; /* termometrenin taban çizgisinin altına inen derinlik (R birimi) */
+var TUBE_HALF_R = 1+OB_K*OB_SIN;
+function layoutCylinder(sw, sh, hasGraph){
+  var rightMargin = hasGraph ? sw*0.40 : sw*0.06;
+  var availW = sw - sw*0.10 - rightMargin;
+  var extraW = WORLD_R*OB_K*OB_COS + WORLD_R*1.2;
+  var scaleW = availW/(WORLD_LMAX+extraW);
+
+  var topPad=sh*0.04, botPad=sh*0.03;
+  var availH = sh - topPad - botPad;
+  var totalWorldH = GAUGE_UP_R + TUBE_HALF_R*2 + THERMO_DOWN_R;
+  var scaleH = availH/(WORLD_R*totalWorldH);
+
+  var scale = Math.min(scaleW, scaleH);
+  var cx = sw*0.10 + WORLD_R*scale*0.35;
+  var cy = topPad + WORLD_R*scale*(GAUGE_UP_R+TUBE_HALF_R);
+  return {cx:cx, cy:cy, scale:scale};
+}
+
+function drawBox3DScene(sc){
   var d=fit(), sw=d[0], sh=d[1];
   ctx.clearRect(0,0,sw,sh);
-  var box=computeBox(W, sw, sh);
+  var lay=layoutCylinder(sw,sh, !!sc.graph || sc.mode==="slab");
+  var L = currentLen(W.volFrac, W.locked);
 
   if (!W.inited){
     W.particles=[];
-    for (var i=0;i<W.n;i++) W.particles.push(spawnParticle(box, speedFromT(W.T), 1, "#fbbf24", "g"));
+    for (var i=0;i<W.n;i++) W.particles.push(spawn3D(L, WORLD_R, speedFromT(W.T), 1, "#fbbf24", "g"));
     W.inited=true;
-    var Vrel0=box.w/box.maxW;
+    var Vrel0=L/WORLD_LMAX;
     if (W.auto) W.targetP = K_P*W.n*W.T/Vrel0;
     if (sc.graph) W.gx = computeGraphDomain(sc, W);
+    if (sc.combined) W.baseline = null;
   }
 
-  stepBox(W.particles, box);
+  step3D(W.particles, 0, L, WORLD_R, null);
   W.frame++;
 
-  var Vrel=box.w/box.maxW;
+  var Vrel=L/WORLD_LMAX;
   if (W.auto){
     var VrelTarget=clamp(K_P*W.n*W.T/W.targetP, VOL_MIN_FRAC, 1.05);
     W.volFrac += (VrelTarget-W.volFrac)*0.06;
+    L = currentLen(W.volFrac, W.locked);
   }
   var Pmodel = K_P*W.n*W.T/Vrel;
 
-  ctx.strokeStyle="#334155"; ctx.lineWidth=2; ctx.strokeRect(box.x,box.y,box.w,box.h);
-  if (!W.locked){
-    ctx.fillStyle="#fbbf24"; ctx.fillRect(box.x+box.w-4, box.y-12, 8, box.h+24);
-    ctx.fillStyle="#fbbf24"; ctx.font="600 11px system-ui"; ctx.textAlign="center";
-    ctx.fillText("piston", box.x+box.w, box.y-18);
-  }
-  for (i=0;i<W.particles.length;i++){
-    var p=W.particles[i];
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.284); ctx.fillStyle=p.color; ctx.fill();
-  }
+  if (sc.combined && W.baseline===null) W.baseline = Pmodel*Vrel/W.T;
 
-  var hud=["T = "+Math.round(W.T)+" K","n = "+W.n,"V (bağıl) = "+Vrel.toFixed(2),"P (bağıl) = "+Pmodel.toFixed(1)];
-  if (sc.showPV) hud.push("P·V ≈ "+(Pmodel*Vrel).toFixed(1));
-  ctx.fillStyle="#94a3b8"; ctx.font="600 13px ui-monospace, monospace"; ctx.textAlign="left";
-  for (i=0;i<hud.length;i++) ctx.fillText(hud[i], sw*0.07, sh*0.12+i*18);
+  var rightMode = W.locked ? "locked" : "piston";
+  drawCylinder(lay.cx, lay.cy, lay.scale, L, WORLD_R, rightMode, true, Pmodel, 140, W.T, 900);
+  var proj = mkProjector(lay.cx, lay.cy, lay.scale); proj.scale=lay.scale;
+  drawParticles3D(proj, W.particles, WORLD_R);
+
+  if (sc.mode==="slab"){
+    hudEl.className="hud hide";
+  } else {
+    var hud=["T = "+Math.round(W.T)+" K","n = "+W.n,"V (bağıl) = "+Vrel.toFixed(2),"P (bağıl) = "+Pmodel.toFixed(1)];
+    if (sc.showPV) hud.push("P·V ≈ "+(Pmodel*Vrel).toFixed(1));
+    if (sc.combined && W.baseline!==null) hud.push("P·V/T ≈ "+(Pmodel*Vrel/W.T).toFixed(3)+"  (başlangıç: "+W.baseline.toFixed(3)+")");
+    hudPanel(sw, sh, hud);
+  }
 
   if (sc.graph){
     if (W.frame%12===0){
@@ -455,156 +815,125 @@ function drawBoxScene(sc){
   }
 }
 
-/* ============================ ÇİZİM: DALTON ============================ */
-function drawDaltonScene(sc){
+function drawDalton3DScene(sc){
   var d=fit(), sw=d[0], sh=d[1];
   ctx.clearRect(0,0,sw,sh);
-  var box=computeBox({locked:true, volFrac:W.vol0}, sw, sh);
+  var lay=layoutCylinder(sw,sh);
+  var L = currentLen(W.vol0, true);
 
   if (!W.inited){
     W.particles=[];
-    for (var i=0;i<W.nA;i++) W.particles.push(spawnParticle(box, speedFromT(W.T), 1, "#fbbf24", "A"));
-    for (i=0;i<W.nB;i++) W.particles.push(spawnParticle(box, speedFromT(W.T), 1, "#38bdf8", "B"));
+    for (var i=0;i<W.nA;i++) W.particles.push(spawn3D(L, WORLD_R, speedFromT(W.T), 1, "#fbbf24", "A"));
+    for (i=0;i<W.nB;i++) W.particles.push(spawn3D(L, WORLD_R, speedFromT(W.T), 1, "#38bdf8", "B"));
     W.inited=true;
   }
 
-  stepBox(W.particles, box);
+  step3D(W.particles, 0, L, WORLD_R, null);
   W.frame++;
 
   var Vrel=W.vol0;
   var pA=K_P*W.nA*W.T/Vrel, pB=K_P*W.nB*W.T/Vrel;
 
-  ctx.strokeStyle="#334155"; ctx.lineWidth=2; ctx.strokeRect(box.x,box.y,box.w,box.h);
-  for (i=0;i<W.particles.length;i++){
-    var p=W.particles[i];
-    if (W.filter!=="both" && p.tag!==W.filter) continue;
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.284); ctx.fillStyle=p.color; ctx.fill();
-  }
+  drawCylinder(lay.cx, lay.cy, lay.scale, L, WORLD_R, "locked", true, pA+pB, 140, W.T, 900);
+  var proj = mkProjector(lay.cx, lay.cy, lay.scale); proj.scale=lay.scale;
+  var visible = W.filter==="both" ? W.particles : W.particles.filter(function(p){ return p.tag===W.filter; });
+  drawParticles3D(proj, visible, WORLD_R);
 
-  ctx.font="600 13px ui-monospace, monospace"; ctx.textAlign="left";
-  ctx.fillStyle="#fbbf24"; ctx.fillText("P (turuncu, A) = "+pA.toFixed(1), sw*0.07, sh*0.12);
-  ctx.fillStyle="#38bdf8"; ctx.fillText("P (mavi, B) = "+pB.toFixed(1), sw*0.07, sh*0.12+18);
-  ctx.fillStyle="#94a3b8"; ctx.fillText("P (toplam) = "+(pA+pB).toFixed(1), sw*0.07, sh*0.12+36);
+  hudPanel(sw, sh, [
+    "P (turuncu, A) = "+pA.toFixed(1),
+    "P (mavi, B) = "+pB.toFixed(1),
+    "P (toplam) = "+(pA+pB).toFixed(1)
+  ]);
 }
 
-/* ============================ ÇİZİM: DİFÜZYON ============================ */
-function drawDiffusionScene(sc){
+function drawDiffusion3DScene(sc){
   var d=fit(), sw=d[0], sh=d[1];
   ctx.clearRect(0,0,sw,sh);
-  var box=computeBox({locked:true, volFrac:0.72}, sw, sh);
-  var midX=box.x+box.w/2;
+  var lay=layoutCylinder(sw,sh);
+  var L = currentLen(0.78, true);
+  var mid = L/2;
 
   if (!W.inited){
     W.particles=[];
-    var leftBox={x:box.x,y:box.y,w:box.w/2,h:box.h}, rightBox={x:midX,y:box.y,w:box.w/2,h:box.h};
-    for (var i=0;i<30;i++) W.particles.push(spawnParticle(leftBox, speedFromT(320), 1, "#fbbf24", "A"));
-    for (i=0;i<30;i++) W.particles.push(spawnParticle(rightBox, speedFromT(320), 1, "#38bdf8", "B"));
+    for (var i=0;i<28;i++) W.particles.push(spawn3D(mid, WORLD_R, speedFromT(320), 1, "#fbbf24", "A"));
+    for (i=0;i<28;i++){
+      var p=spawn3D(mid, WORLD_R, speedFromT(320), 1, "#38bdf8", "B");
+      p.x += mid; W.particles.push(p);
+    }
     W.inited=true; W.barrier=true;
   }
 
-  for (i=0;i<W.particles.length;i++){
-    var p=W.particles[i];
-    p.x+=p.vx; p.y+=p.vy;
-    if (p.x-p.r<box.x){ p.x=box.x+p.r; if(p.vx<0) p.vx=-p.vx; }
-    if (p.x+p.r>box.x+box.w){ p.x=box.x+box.w-p.r; if(p.vx>0) p.vx=-p.vx; }
-    if (p.y-p.r<box.y){ p.y=box.y+p.r; if(p.vy<0) p.vy=-p.vy; }
-    if (p.y+p.r>box.y+box.h){ p.y=box.y+box.h-p.r; if(p.vy>0) p.vy=-p.vy; }
-    if (W.barrier){
-      if (p.tag==="A" && p.x+p.r>midX){ p.x=midX-p.r; if(p.vx>0) p.vx=-p.vx; }
-      if (p.tag==="B" && p.x-p.r<midX){ p.x=midX+p.r; if(p.vx<0) p.vx=-p.vx; }
-    }
-  }
-  for (i=0;i<W.particles.length;i++) for (var j=i+1;j<W.particles.length;j++) collidePair(W.particles[i],W.particles[j]);
+  var walls = W.barrier ? [{x:mid, open:false, hole:0}] : null;
+  step3D(W.particles, 0, L, WORLD_R, walls);
   W.frame++;
 
-  ctx.strokeStyle="#334155"; ctx.lineWidth=2; ctx.strokeRect(box.x,box.y,box.w,box.h);
+  drawCylinder(lay.cx, lay.cy, lay.scale, L, WORLD_R, "locked", false, 0, 140, 320, 900);
+  var proj = mkProjector(lay.cx, lay.cy, lay.scale); proj.scale=lay.scale;
   if (W.barrier){
-    ctx.save(); ctx.setLineDash([5,5]); ctx.strokeStyle="#fbbf24"; ctx.lineWidth=2.4;
-    ctx.beginPath(); ctx.moveTo(midX,box.y); ctx.lineTo(midX,box.y+box.h); ctx.stroke(); ctx.restore();
+    var midPts = ellipsePts(proj, mid, WORLD_R, 56);
+    drawCapDisc(midPts, [[0,"rgba(251,191,36,.16)"],[0.5,"rgba(251,191,36,.30)"],[1,"rgba(251,191,36,.16)"]], {stroke:"rgba(251,191,36,.9)", lw:2.2});
   }
-  W.particles.forEach(function(p){ ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.284); ctx.fillStyle=p.color; ctx.fill(); });
+  drawParticles3D(proj, W.particles, WORLD_R);
 
   var mixedRight=0, mixedLeft=0;
-  W.particles.forEach(function(p){ if(p.tag==="A" && p.x>midX) mixedRight++; if(p.tag==="B" && p.x<midX) mixedLeft++; });
-  ctx.font="600 13px ui-monospace, monospace"; ctx.textAlign="left"; ctx.fillStyle="#94a3b8";
-  ctx.fillText("karışım: "+(W.barrier ? "bölme kapalı" : "turuncu sağda "+mixedRight+", mavi solda "+mixedLeft), box.x, box.y-14);
+  W.particles.forEach(function(p){ if(p.tag==="A" && p.x>mid) mixedRight++; if(p.tag==="B" && p.x<mid) mixedLeft++; });
+  hudPanel(sw, sh, [W.barrier ? "zar: kapalı" : "turuncu sağda "+mixedRight+", mavi solda "+mixedLeft]);
 }
 
-/* ============================ ÇİZİM: EFÜZYON ============================ */
-function chamberPair(xStart, totalW, sh){
-  var y=sh*0.28, h=sh*0.48;
-  var srcW=totalW*0.66, recvW=totalW*0.34;
-  var source={x:xStart, y:y, w:srcW, h:h};
-  var recv={x:xStart+srcW, y:y, w:recvW, h:h};
-  var wallX=xStart+srcW;
-  return { source:source, recv:recv, wallX:wallX, gap0:y+h*0.40, gap1:y+h*0.60 };
-}
-function drawChamberOutline(shape){
-  ctx.strokeStyle="#334155"; ctx.lineWidth=2;
-  ctx.strokeRect(shape.source.x, shape.source.y, (shape.recv.x+shape.recv.w-shape.source.x), shape.source.h);
-  ctx.beginPath();
-  ctx.moveTo(shape.wallX, shape.source.y); ctx.lineTo(shape.wallX, shape.gap0);
-  ctx.moveTo(shape.wallX, shape.gap1); ctx.lineTo(shape.wallX, shape.source.y+shape.source.h);
-  ctx.stroke();
-  ctx.strokeStyle="#fbbf24"; ctx.lineWidth=2.6;
-  ctx.beginPath(); ctx.moveTo(shape.wallX, shape.gap0); ctx.lineTo(shape.wallX, shape.gap1); ctx.stroke();
-  ctx.fillStyle="#64748b"; ctx.font="11px system-ui"; ctx.textAlign="left";
-  ctx.fillText("kaynak oda", shape.source.x+6, shape.source.y+14);
-  ctx.textAlign="right";
-  ctx.fillText("karşı oda", shape.recv.x+shape.recv.w-6, shape.source.y+14);
-  ctx.textAlign="left";
-}
-function stepChamber(list, shape){
-  var recvCount=0;
-  var left=shape.source.x, right=shape.recv.x+shape.recv.w, top=shape.source.y, bottom=shape.source.y+shape.source.h;
-  for (var i=0;i<list.length;i++){
-    var p=list[i];
-    p.x+=p.vx; p.y+=p.vy;
-    if (p.x-p.r<left){ p.x=left+p.r; if(p.vx<0) p.vx=-p.vx; }
-    if (p.x+p.r>right){ p.x=right-p.r; if(p.vx>0) p.vx=-p.vx; }
-    if (p.y-p.r<top){ p.y=top+p.r; if(p.vy<0) p.vy=-p.vy; }
-    if (p.y+p.r>bottom){ p.y=bottom-p.r; if(p.vy>0) p.vy=-p.vy; }
-    if (Math.abs(p.x-shape.wallX)<p.r && (p.y<shape.gap0 || p.y>shape.gap1)){
-      if (p.x<shape.wallX){ p.x=shape.wallX-p.r; if(p.vx>0) p.vx=-p.vx; }
-      else { p.x=shape.wallX+p.r; if(p.vx<0) p.vx=-p.vx; }
-    }
-    if (p.x>shape.wallX) recvCount++;
-  }
-  for (i=0;i<list.length;i++) for (var j=i+1;j<list.length;j++) collidePair(list[i],list[j]);
-  return recvCount;
-}
-function drawEffusionScene(sc){
+function drawEffusion3DScene(sc){
   var d=fit(), sw=d[0], sh=d[1];
   ctx.clearRect(0,0,sw,sh);
-  var totalW=sw*0.42;
-  var shapeL=chamberPair(sw*0.05, totalW, sh);
-  var shapeH=chamberPair(sw*0.53, totalW, sh);
+
+  var pairScale = Math.min(sw*0.40/ (WORLD_LMAX+WORLD_R*2.4), sh*0.34/(WORLD_R*2.6));
+  var Ls=WORLD_LMAX*0.62, Lr=WORLD_LMAX*0.30, Ltot=Ls+Lr;
+  var cxL = sw*0.065, cxH = sw*0.535;
+  var cy1 = sh*0.30, cy2 = sh*0.72;
 
   if (!W.inited){
     W.pl=[]; W.ph=[];
-    for (var i=0;i<22;i++) W.pl.push(spawnParticle(shapeL.source, BASE_SPEED*2.0, 1, "#38bdf8", "L", 2.6));
-    for (i=0;i<22;i++) W.ph.push(spawnParticle(shapeH.source, BASE_SPEED*0.5, 4, "#fb7185", "H", 3.4));
+    for (var i=0;i<20;i++) W.pl.push(spawn3D(Ls, WORLD_R, speedFromT(560), 1, "#38bdf8", "L", 0.045));
+    for (i=0;i<20;i++) W.ph.push(spawn3D(Ls, WORLD_R, speedFromT(140), 4, "#fb7185", "H", 0.06));
     W.inited=true;
   }
 
-  var recvL=stepChamber(W.pl, shapeL);
-  var recvH=stepChamber(W.ph, shapeH);
+  var wallsPair=[{x:Ls, open:false, hole:0.16}];
+  step3D(W.pl, 0, Ltot, WORLD_R, wallsPair);
+  step3D(W.ph, 0, Ltot, WORLD_R, wallsPair);
   W.frame++;
 
-  drawChamberOutline(shapeL); drawChamberOutline(shapeH);
-  W.pl.concat(W.ph).forEach(function(p){ ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.284); ctx.fillStyle=p.color; ctx.fill(); });
+  function drawPair(cx,cy,list,PMax){
+    drawCylinder(cx, cy, pairScale, Ltot, WORLD_R, "locked", false, 0, PMax, 300, 900);
+    var proj = mkProjector(cx, cy, pairScale); proj.scale=pairScale;
+    var wallPts = ellipsePts(proj, Ls, WORLD_R, 48);
+    drawCapDisc(wallPts, [[0,"rgba(30,41,59,.85)"],[1,"rgba(15,20,30,.85)"]], {stroke:"rgba(100,116,139,.6)"});
+    ctx.save();
+    ctx.beginPath(); ctx.arc(proj(Ls,0,0)[0], proj(Ls,0,0)[1], 0.16*pairScale, 0, Math.PI*2);
+    ctx.fillStyle="#05070c"; ctx.fill();
+    ctx.strokeStyle="#fbbf24"; ctx.lineWidth=1.6; ctx.stroke();
+    ctx.restore();
+    drawParticles3D(proj, list, WORLD_R);
+    return proj;
+  }
+  drawPair(cxL, cy1, W.pl, 90);
+  drawPair(cxH, cy2, W.ph, 90);
+
+  var recvL=0, recvH=0;
+  W.pl.forEach(function(p){ if (p.x>Ls) recvL++; });
+  W.ph.forEach(function(p){ if (p.x>Ls) recvH++; });
 
   ctx.font="600 13px ui-monospace, monospace"; ctx.textAlign="left";
-  ctx.fillStyle="#38bdf8"; ctx.fillText("hafif gaz (H₂) — karşı odada: "+recvL+" / "+W.pl.length, shapeL.source.x, shapeL.source.y-16);
-  ctx.fillStyle="#fb7185"; ctx.fillText("ağır gaz (O₂) — karşı odada: "+recvH+" / "+W.ph.length, shapeH.source.x, shapeH.source.y-16);
+  ctx.fillStyle="#38bdf8"; ctx.fillText("hafif gaz (H₂) — karşı odada: "+recvL+" / "+W.pl.length, sw*0.03, sh*0.06);
+  ctx.fillStyle="#fb7185"; ctx.fillText("ağır gaz (O₂) — karşı odada: "+recvH+" / "+W.ph.length, sw*0.03, sh*0.94);
 
-  var bx=sw*0.05, by=sh*0.86, bw=sw*0.42;
-  ctx.fillStyle="#1f2937"; ctx.fillRect(bx,by,bw,14); ctx.fillRect(bx,by+22,bw,14);
-  ctx.fillStyle="#38bdf8"; ctx.fillRect(bx,by,bw*(recvL/Math.max(W.pl.length,1)),14);
-  ctx.fillStyle="#fb7185"; ctx.fillRect(bx,by+22,bw*(recvH/Math.max(W.ph.length,1)),14);
+  var bx=sw*0.62, by=sh*0.04, bw=sw*0.34;
+  ctx.fillStyle="#1f2937"; ctx.fillRect(bx,by,bw,12); ctx.fillRect(bx,by+18,bw,12);
+  ctx.fillStyle="#38bdf8"; ctx.fillRect(bx,by,bw*(recvL/Math.max(W.pl.length,1)),12);
+  ctx.fillStyle="#fb7185"; ctx.fillRect(bx,by+18,bw*(recvH/Math.max(W.ph.length,1)),12);
 }
 
-/* ============================ ANA DÖNGÜ ============================ */
+/* ============================================================
+   ANA DÖNGÜ
+   ============================================================ */
 function fit(){
   var r=cv.getBoundingClientRect();
   var dpr=window.devicePixelRatio||1;
@@ -615,14 +944,17 @@ function fit(){
 
 function loop(){
   var sc=SCENES[idx];
-  if (sc.mode==="box" && W) drawBoxScene(sc);
-  else if (sc.mode==="dalton" && W) drawDaltonScene(sc);
-  else if (sc.mode==="diffusion" && W) drawDiffusionScene(sc);
-  else if (sc.mode==="effusion" && W) drawEffusionScene(sc);
+  var mode = sc.mode==="slab" ? "box3d" : sc.mode;
+  if (mode==="box3d" && W) drawBox3DScene(sc);
+  else if (mode==="dalton3d" && W) drawDalton3DScene(sc);
+  else if (mode==="diffusion3d" && W) drawDiffusion3DScene(sc);
+  else if (mode==="effusion3d" && W) drawEffusion3DScene(sc);
   requestAnimationFrame(loop);
 }
 
-/* ============================ ARAYÜZ ============================ */
+/* ============================================================
+   ARAYÜZ
+   ============================================================ */
 var idx=0;
 var cv=document.getElementById("cv"), ctx=cv.getContext("2d");
 var slab=document.getElementById("slab");
@@ -632,6 +964,23 @@ var SLIDER_META = {
   V:{min:16,max:100,step:1,label:"Hacim (%)"},
   n:{min:10,max:70,step:2,label:"Tanecik sayısı"}
 };
+
+function buildChapters(){
+  var nav=document.getElementById("chapters");
+  nav.innerHTML="";
+  CHAPTERS.forEach(function(ch){
+    var b=document.createElement("button");
+    b.className="chip"; b.textContent=ch.label;
+    b.onclick=function(){ idx=ch.from; render(); };
+    nav.appendChild(b);
+  });
+}
+function syncChapters(){
+  var nav=document.getElementById("chapters");
+  var activeI=0;
+  for (var i=0;i<CHAPTERS.length;i++) if (idx>=CHAPTERS[i].from) activeI=i;
+  Array.prototype.forEach.call(nav.children, function(c,i){ c.className = i===activeI ? "chip on" : "chip"; });
+}
 
 function render(){
   var sc=SCENES[idx];
@@ -643,13 +992,14 @@ function render(){
   document.getElementById("count").textContent=(idx+1)+" / "+SCENES.length;
   document.getElementById("prev").disabled = idx===0;
   document.getElementById("next").disabled = idx===SCENES.length-1;
+  syncChapters();
+
+  hudEl.className="hud hide"; hudLast="";
 
   var isSlab = sc.mode==="slab";
-  cv.className = isSlab ? "hide" : "";
   slab.className = isSlab ? "slab" : "slab hide";
   if (isSlab){
-    slab.innerHTML = sc.slab==="combined" ? COMBINED_HTML
-      : sc.slab==="ideal" ? IDEAL_HTML
+    slab.innerHTML = sc.slab==="ideal" ? IDEAL_HTML
       : sc.slab==="real" ? REAL_HTML
       : END_HTML;
   }
@@ -658,7 +1008,7 @@ function render(){
 
   var ex=document.getElementById("extra"); ex.innerHTML="";
 
-  if (sc.mode==="box" && sc.sliders && sc.sliders.length){
+  if (sc.mode==="box3d" && sc.sliders && sc.sliders.length){
     sc.sliders.forEach(function(key){
       var meta = SLIDER_META[key];
       var min=meta.min, max = key==="n" ? (sc.nMax||meta.max) : meta.max;
@@ -674,14 +1024,14 @@ function render(){
         if (!W) return;
         if (key==="T") setTemperature(W, Number(this.value));
         else if (key==="V") W.volFrac=Number(this.value)/100;
-        else if (key==="n") setParticleCount(W, Number(this.value), computeBox(W, cv.getBoundingClientRect().width, cv.getBoundingClientRect().height), "#fbbf24");
+        else if (key==="n") setParticleCount(W, Number(this.value), currentLen(W.volFrac, W.locked), WORLD_R, "#fbbf24");
       };
       wrap.appendChild(lab); wrap.appendChild(inp); wrap.appendChild(val);
       ex.appendChild(wrap);
     });
   }
 
-  if (sc.mode==="dalton" && sc.speciesToggle){
+  if (sc.mode==="dalton3d" && sc.speciesToggle){
     [["both","ikisi birden"],["A","sadece turuncu"],["B","sadece mavi"]].forEach(function(k){
       var b=document.createElement("button");
       b.textContent=k[1]; b.className = W.filter===k[0] ? "on" : "";
@@ -694,7 +1044,7 @@ function render(){
     });
   }
 
-  if (sc.mode==="diffusion"){
+  if (sc.mode==="diffusion3d"){
     var tb=document.createElement("button");
     tb.textContent = W.barrier ? "bölmeyi kaldır" : "bölmeyi yerleştir";
     tb.onclick=function(){
@@ -709,7 +1059,7 @@ function render(){
     ex.appendChild(rb2);
   }
 
-  if (sc.mode==="effusion" && sc.resettable){
+  if (sc.mode==="effusion3d" && sc.resettable){
     var rb=document.createElement("button");
     rb.textContent="sıfırla";
     rb.onclick=function(){ initScene(); };
@@ -733,6 +1083,7 @@ document.addEventListener("keydown",function(e){
   if (e.key==="ArrowLeft"||e.key==="PageUp"){ e.preventDefault(); go(-1); }
 });
 
+buildChapters();
 render();
 requestAnimationFrame(loop);
 
